@@ -34,9 +34,22 @@ node _system/server.js --port 8080
 # oder: PORT=8080 npm start
 ```
 
-In der Ansicht: Suchen (oben rechts), Cluster per Legende ein-/ausblenden,
-Knoten anklicken für Details und **„In Obsidian öffnen"**, Knopf
-**„Neu indexieren"** liest den Vault frisch ein. Beenden mit `Strg+C`.
+### Die fünf Ansichten (Umschalter rechts, wie im Video)
+
+| Ansicht | Zeigt |
+|---|---|
+| ☁ Wolken | Alle Cluster als getrennte Farbwolken (Force-Layout) |
+| ◍ Sphäre | Der ganze Bestand als rotierender Globus aus Punkten |
+| ▥ Säulen | Punktmatrix-Säulen pro Cluster, oranger Fundament-Hub |
+| ✳ Radial | Eine Notiz im Zentrum, Verknüpfungen als Speichen |
+| ✦ Nebel | Tiefer Zoom in ein Cluster als Partikelnebel |
+
+Die Referenz-Frames aus dem Video liegen in `_system/design-referenz/`.
+
+In jeder Ansicht: Suchen (oben rechts — Titel, Tags, Pfad), Cluster per
+Leiste unten ein-/ausblenden (im Nebel: Cluster wählen), Knoten anklicken
+für Details und **„In Obsidian öffnen"**, Knopf **„Neu indexieren"** liest
+den Vault frisch ein. Beenden mit `Strg+C`.
 
 ## Obsidian anbinden
 

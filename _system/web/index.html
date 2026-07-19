@@ -22,16 +22,28 @@
     </div>
   </header>
 
-  <aside id="legend"></aside>
+  <div id="side">
+    <nav id="views">
+      <h3>Ansichten</h3>
+      <button data-mode="wolken" class="active">☁ Wolken</button>
+      <button data-mode="sphaere">◍ Sphäre</button>
+      <button data-mode="saeulen">▥ Säulen</button>
+      <button data-mode="radial">✳ Radial</button>
+      <button data-mode="nebel">✦ Nebel</button>
+      <p id="view-hint"></p>
+    </nav>
 
-  <aside id="panel" class="hidden">
-    <button id="panel-close" title="Schließen">×</button>
-    <h2 id="panel-title"></h2>
-    <p id="panel-path"></p>
-    <div id="panel-tags"></div>
-    <div id="panel-neighbors"></div>
-    <a id="panel-open" class="button" href="#">In Obsidian öffnen</a>
-  </aside>
+    <aside id="panel" class="hidden">
+      <button id="panel-close" title="Schließen">×</button>
+      <h2 id="panel-title"></h2>
+      <p id="panel-path"></p>
+      <div id="panel-tags"></div>
+      <div id="panel-neighbors"></div>
+      <a id="panel-open" class="button" href="#">In Obsidian öffnen</a>
+    </aside>
+  </div>
+
+  <aside id="legend"></aside>
 
   <script src="vendor/d3.v7.min.js"></script>
   <script src="app.js"></script>

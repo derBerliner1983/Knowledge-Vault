@@ -93,10 +93,41 @@ html, body {
 #legend .item:hover .name, #legend .item:not(.muted).active .name { color: var(--text); }
 #legend .count { font-size: 10px; color: currentColor; opacity: 0.9; }
 
+/* Rechte Seitenleiste: Ansichts-Umschalter + Detail-Panel (wie im Video) */
+#side {
+  position: fixed; right: 16px; top: 64px;
+  display: flex; flex-direction: column; gap: 12px;
+  width: 300px; max-height: calc(100% - 160px);
+}
+
+#views {
+  background: var(--panel); border: 1px solid var(--panel-border);
+  border-radius: 12px; padding: 14px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 40px rgba(255, 154, 31, 0.08);
+}
+#views h3 {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em;
+  color: var(--text-dim); margin-bottom: 8px;
+}
+#views button {
+  display: block; width: 100%; text-align: left;
+  margin-bottom: 6px; padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.04); color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.10); border-radius: 8px;
+  font-size: 13px; cursor: pointer;
+}
+#views button:hover { border-color: var(--accent); }
+#views button.active {
+  background: rgba(255, 154, 31, 0.14);
+  border-color: var(--accent); color: #fff;
+  box-shadow: 0 0 14px rgba(255, 154, 31, 0.2);
+}
+#view-hint { font-size: 11px; color: var(--text-dim); margin-top: 4px; min-height: 2.6em; }
+
 /* Detail-Panel */
 #panel {
-  position: fixed; right: 16px; top: 64px;
-  width: 300px; max-height: calc(100% - 160px); overflow-y: auto;
+  overflow-y: auto; position: relative;
   background: var(--panel); border: 1px solid var(--panel-border);
   border-radius: 12px; padding: 18px;
   backdrop-filter: blur(8px);
