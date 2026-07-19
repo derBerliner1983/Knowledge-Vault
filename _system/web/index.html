@@ -19,8 +19,43 @@
     <div id="controls">
       <input id="search" type="search" placeholder="Suchen … (Titel, Tag, Pfad)" autocomplete="off">
       <button id="reindex" title="Vault neu einlesen">⟳ Neu indexieren</button>
+      <button id="automat-btn" title="Regeln, Aufträge und LLM-Status">⚙ Automat</button>
     </div>
   </header>
+
+  <div id="automat" class="hidden">
+    <div id="automat-card">
+      <button id="automat-close" title="Schließen">×</button>
+      <h2>⚙ Der Automat</h2>
+
+      <section>
+        <h3>Lokales LLM</h3>
+        <div id="llm-status">Prüfe …</div>
+      </section>
+
+      <section>
+        <h3>Auftrag an das LLM</h3>
+        <textarea id="auftrag-text" rows="3"
+          placeholder="z. B.: Leere die Inbox und sortiere die Notizen nach den Regeln in die passenden Ordner ein."></textarea>
+        <div class="reihe">
+          <select id="modell-wahl" title="Modell für diesen Auftrag"></select>
+          <button id="auftrag-plan">Nur Plan zeigen</button>
+          <button id="auftrag-los" class="primaer">Planen &amp; ausführen</button>
+        </div>
+        <div id="auftrag-ergebnis"></div>
+      </section>
+
+      <section>
+        <h3>Regeln (Crontab — <code>_system/regeln.json</code>)</h3>
+        <div id="regeln"></div>
+      </section>
+
+      <section>
+        <h3>Protokoll</h3>
+        <pre id="automat-log">—</pre>
+      </section>
+    </div>
+  </div>
 
   <div id="side">
     <nav id="views">
@@ -47,5 +82,6 @@
 
   <script src="vendor/d3.v7.min.js"></script>
   <script src="app.js"></script>
+  <script src="automat-ui.js"></script>
 </body>
 </html>

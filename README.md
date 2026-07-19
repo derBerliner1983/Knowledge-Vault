@@ -8,6 +8,16 @@ Claude ist der Bibliothekar, die Graph-Ansicht ist nur das Fenster.
 
 ## Installation (einmalig)
 
+### Windows 11 — ein Doppelklick
+
+1. Repo holen: auf GitHub **„Code → Download ZIP"**, entpacken (oder `git clone`).
+2. Im Ordner **`Installieren-und-Starten.bat`** doppelklicken — das Skript
+   installiert Node.js automatisch (über winget), falls es fehlt, indexiert den
+   Vault, startet den Server und öffnet den Browser. Fenster offen lassen.
+3. Für die Zeitplan-Regeln zusätzlich **`Automat-Starten.bat`** doppelklicken.
+
+### Mac / Linux / manuell
+
 1. **Node.js installieren** (ab Version 18): [nodejs.org](https://nodejs.org) —
    LTS-Version herunterladen und installieren. Prüfen: `node --version`
 2. **Repo holen** (Terminal bzw. PowerShell):
@@ -56,6 +66,23 @@ Leiste unten ein-/ausblenden (im Nebel: Cluster wählen), Knoten anklicken
 für Details und **„In Obsidian öffnen"**, Knopf **„Neu indexieren"** liest
 den Vault frisch ein. Beenden mit `Strg+C`.
 
+**Live:** Der Server überwacht den Vault. Legst du in Obsidian eine Notiz an
+(oder änderst eine), wird automatisch neu indexiert und die Graph-Ansicht
+aktualisiert sich von selbst nach wenigen Sekunden — kein Knopfdruck nötig.
+
+### Der ⚙-Automat-Tab (oben rechts)
+
+- **Lokales LLM:** zeigt, ob LM Studio/Ollama erreichbar ist, welche Modelle
+  heruntergeladen sind und welches gerade **im RAM geladen** ist (●).
+- **Auftrag an das LLM:** Freitext wie *„Leere die Inbox und sortiere die
+  Notizen nach den Regeln ein."* — das LLM bekommt die Vault-Regeln
+  (INDEX.md, CLAUDE.md) mit und antwortet mit einem Aktionsplan
+  (verschieben, taggen, Notiz anlegen, anhängen). **„Nur Plan zeigen"**
+  lässt dich erst abnicken; **„Planen & ausführen"** macht es direkt.
+  Ausgeführt wird immer geprüft: nur `.md`-Dateien, nur innerhalb des
+  Vaults, Systemordner sind tabu, nichts wird überschrieben.
+- **Regeln:** jede Crontab-Regel per **„▶ Jetzt"** sofort starten.
+
 ## Obsidian anbinden
 
 Diesen Ordner in Obsidian als Vault öffnen („Ordner als Vault öffnen").
@@ -95,11 +122,17 @@ Eine Regel besteht aus:
 
 **Lokales LLM statt Claude:** In `regeln.json` unter `llm` einstellbar:
 
-- `"anbieter": "ollama"` — [ollama.com](https://ollama.com) installieren, dann
-  z. B. `ollama pull qwen2.5:7b`. Läuft komplett lokal auf deinem Rechner.
-- `"anbieter": "openai"` — jeder OpenAI-kompatible lokale Server
-  (LM Studio, llama.cpp: `"url": "http://localhost:1234/v1"`).
+- `"anbieter": "lmstudio"` (Standard) — [lmstudio.ai](https://lmstudio.ai)
+  installieren, ein Modell laden, im Developer-Tab den Server starten.
+  `"modell": "auto"` nimmt automatisch das Modell, das gerade im RAM
+  geladen ist; der ⚙-Automat-Tab zeigt den Zustand an.
+- `"anbieter": "ollama"` — [ollama.com](https://ollama.com), dann
+  z. B. `ollama pull qwen2.5:7b` (`"url": "http://localhost:11434"`).
+- `"anbieter": "openai"` — jeder andere OpenAI-kompatible Server.
 - `"anbieter": "claude-cli"` — nutzt das installierte Claude Code (`claude -p`).
+
+Neben dem Zeitplan geht alles auch **manuell**: im ⚙-Automat-Tab der
+Web-Ansicht — Regel per Knopf starten oder freien Auftrag eintippen.
 
 Grundsatz bleibt: **Die KI schlägt vor, du entscheidest.** Der Standard-Modus
 `vorschlag` verschiebt und ändert nichts — Vorschläge liest du in Obsidian

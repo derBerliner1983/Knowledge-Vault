@@ -84,26 +84,78 @@ function log(text) {
 
 // --- LLM-Anbindung -----------------------------------------------------------
 
-async function frageLLM(cfg, prompt) {
-  const timeout = AbortSignal.timeout(180000);
+const basisUrl = (cfg) => (cfg.url || standardUrl(cfg.anbieter)).replace(/\/$/, "");
+function standardUrl(anbieter) {
+  return anbieter === "lmstudio" ? "http://localhost:1234"
+    : anbieter === "ollama" ? "http://localhost:11434" : "";
+}
+
+/** Modelle des lokalen Servers: heruntergeladen + im RAM geladen. */
+async function listeModelle(cfg) {
+  const timeout = AbortSignal.timeout(8000);
+  const url = basisUrl(cfg);
+  if (cfg.anbieter === "lmstudio") {
+    // Native LM-Studio-API kennt den Lade-Zustand; /v1/models als Rückfallebene.
+    try {
+      const res = await fetch(`${url}/api/v0/models`, { signal: timeout });
+      if (res.ok) {
+        const j = await res.json();
+        const alle = (j.data || j.models || []).filter((m) => (m.type || "llm") !== "embeddings");
+        return {
+          heruntergeladen: alle.map((m) => m.id),
+          geladen: alle.filter((m) => m.state === "loaded").map((m) => m.id),
+        };
+      }
+    } catch {}
+    const res = await fetch(`${url}/v1/models`, { signal: timeout });
+    if (!res.ok) throw new Error(`LM Studio nicht erreichbar (HTTP ${res.status}) — läuft der Server? (LM Studio → Developer → Start Server)`);
+    const ids = ((await res.json()).data || []).map((m) => m.id);
+    return { heruntergeladen: ids, geladen: [] };
+  }
   if (cfg.anbieter === "ollama") {
-    const res = await fetch(`${cfg.url.replace(/\/$/, "")}/api/generate`, {
+    const tags = await (await fetch(`${url}/api/tags`, { signal: timeout })).json();
+    let geladen = [];
+    try { geladen = ((await (await fetch(`${url}/api/ps`, { signal: timeout })).json()).models || []).map((m) => m.name); } catch {}
+    return { heruntergeladen: (tags.models || []).map((m) => m.name), geladen };
+  }
+  return { heruntergeladen: [], geladen: [] };
+}
+
+/** "auto" → nimm das Modell, das gerade im RAM geladen ist. */
+async function aufloeseModell(cfg) {
+  if (cfg.modell && cfg.modell !== "auto") return cfg.modell;
+  const m = await listeModelle(cfg);
+  if (m.geladen.length) return m.geladen[0];
+  if (m.heruntergeladen.length === 1) return m.heruntergeladen[0];
+  throw new Error(
+    cfg.anbieter === "lmstudio"
+      ? "Kein Modell im RAM geladen — in LM Studio ein Modell laden oder in regeln.json ein festes Modell eintragen."
+      : "Kein geladenes Modell gefunden — Modell in regeln.json eintragen.");
+}
+
+async function frageLLM(cfg, prompt) {
+  const timeout = AbortSignal.timeout(300000);
+  if (cfg.anbieter === "ollama") {
+    const modell = await aufloeseModell(cfg);
+    const res = await fetch(`${basisUrl(cfg)}/api/generate`, {
       method: "POST",
       signal: timeout,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: cfg.modell, prompt, stream: false }),
+      body: JSON.stringify({ model: modell, prompt, stream: false }),
     });
     if (!res.ok) throw new Error(`Ollama antwortet mit HTTP ${res.status}`);
     return (await res.json()).response.trim();
   }
-  if (cfg.anbieter === "openai") {
+  if (cfg.anbieter === "lmstudio" || cfg.anbieter === "openai") {
+    const modell = cfg.anbieter === "lmstudio" ? await aufloeseModell(cfg) : cfg.modell;
     const headers = { "Content-Type": "application/json" };
     if (cfg.schluessel) headers.Authorization = `Bearer ${cfg.schluessel}`;
-    const res = await fetch(`${cfg.url.replace(/\/$/, "")}/chat/completions`, {
+    const pfad = cfg.anbieter === "lmstudio" ? "/v1/chat/completions" : "/chat/completions";
+    const res = await fetch(`${basisUrl(cfg)}${pfad}`, {
       method: "POST",
       signal: timeout,
       headers,
-      body: JSON.stringify({ model: cfg.modell, messages: [{ role: "user", content: prompt }] }),
+      body: JSON.stringify({ model: modell, messages: [{ role: "user", content: prompt }] }),
     });
     if (!res.ok) throw new Error(`LLM-Server antwortet mit HTTP ${res.status}`);
     return (await res.json()).choices[0].message.content.trim();
@@ -152,6 +204,143 @@ function mischeTags(fullPath, antwort) {
   fs.writeFileSync(fullPath, text);
 }
 
+// --- Aktionsplan: das LLM plant, das System führt geprüft aus -----------------
+
+const GESCHUETZT = new Set(["_system", ".git", ".obsidian", "node_modules"]);
+
+/** Pfad muss im Vault liegen, .md sein und keinen Systemordner berühren. */
+function sichererPfad(rel) {
+  if (typeof rel !== "string" || !rel.trim()) throw new Error("Leerer Pfad");
+  const norm = path.posix.normalize(rel.replace(/\\/g, "/")).replace(/^\/+/, "");
+  if (norm.startsWith("..")) throw new Error(`Pfad verlässt den Vault: ${rel}`);
+  if (!norm.toLowerCase().endsWith(".md")) throw new Error(`Nur .md-Dateien erlaubt: ${rel}`);
+  if (GESCHUETZT.has(norm.split("/")[0])) throw new Error(`Systemordner sind tabu: ${rel}`);
+  return norm;
+}
+
+function freierZielpfad(norm) {
+  let ziel = path.join(VAULT_ROOT, norm);
+  let i = 2;
+  while (fs.existsSync(ziel)) {
+    ziel = path.join(VAULT_ROOT, norm.replace(/\.md$/i, ` (${i}).md`));
+    i++;
+  }
+  return ziel;
+}
+
+/** Führt einen geprüften Aktionsplan aus. Gibt Protokollzeilen zurück. */
+function fuehreAktionenAus(aktionen) {
+  const protokoll = [];
+  for (const a of aktionen || []) {
+    try {
+      if (a.tu === "verschieben") {
+        const von = sichererPfad(a.von);
+        const nach = sichererPfad(a.nach);
+        const quelle = path.join(VAULT_ROOT, von);
+        if (!fs.existsSync(quelle)) throw new Error(`Quelle fehlt: ${von}`);
+        const ziel = freierZielpfad(nach);
+        fs.mkdirSync(path.dirname(ziel), { recursive: true });
+        fs.renameSync(quelle, ziel);
+        protokoll.push(`✓ verschoben: ${von} → ${path.relative(VAULT_ROOT, ziel)}`);
+      } else if (a.tu === "tags") {
+        const datei = sichererPfad(a.datei);
+        const voll = path.join(VAULT_ROOT, datei);
+        if (!fs.existsSync(voll)) throw new Error(`Datei fehlt: ${datei}`);
+        mischeTags(voll, (a.tags || []).join(", "));
+        protokoll.push(`✓ Tags ergänzt: ${datei} (${(a.tags || []).join(", ")})`);
+      } else if (a.tu === "anhaengen") {
+        const datei = sichererPfad(a.datei);
+        const voll = path.join(VAULT_ROOT, datei);
+        if (!fs.existsSync(voll)) throw new Error(`Datei fehlt: ${datei}`);
+        fs.appendFileSync(voll, `\n\n${String(a.text || "").slice(0, 20000)}\n`);
+        protokoll.push(`✓ angehängt an: ${datei}`);
+      } else if (a.tu === "neue-notiz") {
+        const datei = sichererPfad(a.datei);
+        const ziel = freierZielpfad(datei);
+        fs.mkdirSync(path.dirname(ziel), { recursive: true });
+        fs.writeFileSync(ziel, String(a.text || "").slice(0, 40000));
+        protokoll.push(`✓ Notiz angelegt: ${path.relative(VAULT_ROOT, ziel)}`);
+      } else {
+        protokoll.push(`✗ unbekannte Aktion übersprungen: ${JSON.stringify(a).slice(0, 120)}`);
+      }
+    } catch (err) {
+      protokoll.push(`✗ ${a.tu || "?"}: ${err.message}`);
+    }
+  }
+  // Nach Änderungen den Katalog frisch halten
+  if (protokoll.some((z) => z.startsWith("✓"))) {
+    spawnSync(process.execPath, [path.join(__dirname, "indexer.js")]);
+  }
+  return protokoll;
+}
+
+/** Kontext für freie Aufträge: Regeln + Ordnerliste + Inbox-Inhalt. */
+function bauKontext() {
+  const teile = [];
+  const ordner = fs.readdirSync(VAULT_ROOT, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && !e.name.startsWith(".") && !GESCHUETZT.has(e.name))
+    .map((e) => e.name);
+  teile.push("ORDNER DES VAULTS:\n" + ordner.join("\n"));
+  for (const datei of ["INDEX.md", "CLAUDE.md"]) {
+    const p = path.join(VAULT_ROOT, datei);
+    if (fs.existsSync(p)) teile.push(`=== ${datei} ===\n` + fs.readFileSync(p, "utf8").slice(0, 4000));
+  }
+  const inboxDir = path.join(VAULT_ROOT, "00 Inbox");
+  if (fs.existsSync(inboxDir)) {
+    const dateien = fs.readdirSync(inboxDir)
+      .filter((n) => n.toLowerCase().endsWith(".md") && !n.startsWith("_"))
+      .slice(0, 12);
+    for (const n of dateien) {
+      teile.push(`=== 00 Inbox/${n} ===\n` +
+        fs.readFileSync(path.join(inboxDir, n), "utf8").slice(0, 1500));
+    }
+    if (!dateien.length) teile.push("HINWEIS: Die Inbox ist leer.");
+  }
+  return teile.join("\n\n");
+}
+
+function parseAktionsplan(antwort) {
+  let text = antwort.replace(/```(?:json)?/gi, "").trim();
+  const start = text.indexOf("{");
+  const ende = text.lastIndexOf("}");
+  if (start === -1 || ende <= start) throw new Error("Antwort enthält kein JSON-Objekt.");
+  const plan = JSON.parse(text.slice(start, ende + 1));
+  if (!Array.isArray(plan.aktionen)) plan.aktionen = [];
+  return plan;
+}
+
+/**
+ * Freier Auftrag ("Leere die Inbox und sortiere nach den Regeln ein"):
+ * LLM bekommt Regeln + Kontext, antwortet mit einem JSON-Aktionsplan.
+ * ausfuehren=false → nur der Plan kommt zurück (der Mensch entscheidet).
+ */
+async function auftrag(llmCfg, text, { ausfuehren = false, modell = null } = {}) {
+  const cfg = modell ? Object.assign({}, llmCfg, { modell }) : llmCfg;
+  const prompt =
+    "Du bist der Bibliothekar eines Obsidian-Vaults. Unten stehen die Regeln und der aktuelle Zustand.\n" +
+    "Erfülle die AUFGABE, indem du ausschließlich mit einem JSON-Objekt antwortest — kein Text davor oder danach:\n" +
+    '{"begruendung": "ein kurzer Satz", "aktionen": [\n' +
+    '  {"tu": "verschieben", "von": "00 Inbox/X.md", "nach": "03 Wissen/X.md"},\n' +
+    '  {"tu": "tags", "datei": "03 Wissen/X.md", "tags": ["tag1", "tag2"]},\n' +
+    '  {"tu": "anhaengen", "datei": "…", "text": "…"},\n' +
+    '  {"tu": "neue-notiz", "datei": "03 Wissen/Neu.md", "text": "…"}\n' +
+    "]}\n" +
+    "Nur diese vier Aktionsarten existieren. Verschiebe nur in vorhandene Ordner. " +
+    "Wenn nichts zu tun ist, gib eine leere aktionen-Liste zurück.\n\n" +
+    `AUFGABE: ${text}\n\n${bauKontext()}`;
+
+  const antwort = await frageLLM(cfg, prompt);
+  const plan = parseAktionsplan(antwort);
+  let protokoll = null;
+  if (ausfuehren) {
+    protokoll = fuehreAktionenAus(plan.aktionen);
+    log(`Auftrag „${text.slice(0, 60)}": ${protokoll.filter((z) => z.startsWith("✓")).length}/${plan.aktionen.length} Aktionen ausgeführt.`);
+  } else {
+    log(`Auftrag „${text.slice(0, 60)}": Plan mit ${plan.aktionen.length} Aktion(en) erstellt (nicht ausgeführt).`);
+  }
+  return { plan, protokoll };
+}
+
 // --- Regeln ausführen --------------------------------------------------------
 
 function neueDateien(ordner) {
@@ -196,6 +385,11 @@ async function laufeRegel(regel, llmCfg) {
         const art = regel.ergebnis || "vorschlag";
         if (art === "anhang" && d.rel) haengeAn(path.join(VAULT_ROOT, d.rel), llmCfg, antwort);
         else if (art === "tags" && d.rel) mischeTags(path.join(VAULT_ROOT, d.rel), antwort);
+        else if (art === "aktionen") {
+          const plan = parseAktionsplan(antwort);
+          const protokoll = fuehreAktionenAus(plan.aktionen);
+          log(`Regel „${regel.name}": Aktionsplan — ${protokoll.join(" · ") || "nichts zu tun"}`);
+        }
         else schreibeVorschlag(regel, d.rel, antwort);
         if (d.rel) { state.verarbeitet[d.rel] = d.mtime; saveState(); }
         log(`Regel „${regel.name}": ${d.rel || "Lauf"} → ${art}`);
@@ -245,4 +439,6 @@ async function main() {
   setInterval(tick, 20000);
 }
 
-main();
+module.exports = { frageLLM, listeModelle, aufloeseModell, auftrag, laufeRegel, fuehreAktionenAus, cronMatches };
+
+if (require.main === module) main();

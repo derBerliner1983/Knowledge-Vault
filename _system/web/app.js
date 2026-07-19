@@ -800,5 +800,18 @@ document.getElementById("reindex").onclick = async () => {
   }
 };
 
+// Live: bei Änderungen im Vault (z. B. neue Notiz in Obsidian) automatisch neu laden
+let bekannteVersion = null;
+setInterval(async () => {
+  try {
+    const { version } = await (await fetch("/api/version")).json();
+    if (bekannteVersion === null) { bekannteVersion = version; return; }
+    if (version !== bekannteVersion) {
+      bekannteVersion = version;
+      await load();
+    }
+  } catch {}
+}, 3000);
+
 resize();
 load();
