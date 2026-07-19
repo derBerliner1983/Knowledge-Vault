@@ -5,3 +5,4 @@ node_modules/
 _system/.automat-state.json
 _system/automat-log.md
 _system/regeln.json.bak
+_system/regeln.lokal.json

@@ -186,6 +186,15 @@ html, body {
   border-color: var(--accent);
 }
 
+.zeile-checkbox {
+  flex-direction: row !important; align-items: flex-start; gap: 8px;
+  margin: 10px 0 4px; font-size: 12px; cursor: pointer;
+}
+.zeile-checkbox input[type="checkbox"] {
+  width: 15px !important; height: 15px; margin-top: 2px;
+  accent-color: var(--accent); flex-shrink: 0;
+}
+
 /* Regel-Karten */
 .regel-karte {
   border: 1px solid rgba(255, 255, 255, 0.10); border-radius: 10px;

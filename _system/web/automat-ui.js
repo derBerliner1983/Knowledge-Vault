@@ -21,6 +21,7 @@
   let llmCfg = {};        // aktuelle LLM-Einstellungen
   let regeln = [];        // Regel-Entwurf (wird beim Speichern gepostet)
   let modelle = { heruntergeladen: [], geladen: [] };
+  let rechner = "";       // Name dieses Rechners (für Sync auf mehreren PCs)
 
   document.getElementById("automat-btn").onclick = () => { overlay.classList.remove("hidden"); lade(); };
   document.getElementById("automat-close").onclick = () => overlay.classList.add("hidden");
@@ -31,6 +32,9 @@
       const cfg = await (await fetch("/api/config")).json();
       llmCfg = cfg.llm || {};
       regeln = (cfg.regeln || []).map((r) => JSON.parse(JSON.stringify(r)));
+      rechner = cfg.rechner || "";
+      document.getElementById("rechner-name").textContent = rechner || "?";
+      document.getElementById("llm-lokal").checked = !!cfg.llmLokal;
     } catch {}
     fuelleLLMFormular();
     zeichneRegeln();
@@ -210,10 +214,24 @@
     ergebnis.value = r.ergebnis || "vorschlag";
     ergebnis.onchange = () => { r.ergebnis = ergebnis.value; };
 
+    const nurRechner = document.createElement("input");
+    nurRechner.type = "text";
+    nurRechner.value = r.rechner || "";
+    nurRechner.placeholder = `leer = alle (dieser: ${rechner || "?"})`;
+    nurRechner.oninput = () => {
+      if (nurRechner.value.trim()) r.rechner = nurRechner.value.trim();
+      else delete r.rechner;
+    };
+
     const zeile2 = document.createElement("div");
     zeile2.className = "form-grid";
     zeile2.append(feld("Auslöser", ausTyp), feld("Ordner", ausOrdner), feld("Aktion", aktion), feld("Ergebnis", ergebnis));
     karte.append(zeile2);
+
+    const zeile3 = document.createElement("div");
+    zeile3.className = "form-grid";
+    zeile3.append(feld("Nur auf Rechner (für gesyncte Vaults)", nurRechner));
+    karte.append(zeile3);
 
     // Prompt / Befehl
     const prompt = document.createElement("textarea");
@@ -264,7 +282,11 @@
     try {
       const res = await fetch("/api/config", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ llm: llmCfg, regeln }),
+        body: JSON.stringify({
+          llm: llmCfg,
+          regeln,
+          llmLokal: document.getElementById("llm-lokal").checked,
+        }),
       });
       const j = await res.json();
       if (!res.ok) throw new Error(j.fehler || "Speichern fehlgeschlagen");

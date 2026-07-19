@@ -162,6 +162,26 @@ OS-eigenen Scheduler nutzen — Eintrag z. B.:
 `*/15 * * * * cd /Pfad/zu/Knowledge-Vault && node _system/automat.js --einmal`
 (Windows: Aufgabenplanung mit demselben Befehl).
 
+## Zwei PCs, ein Gehirn — Vault-Sync
+
+Der Vault kann komplett gesynct werden (Syncthing, OneDrive, Obsidian Sync,
+git …) — **die Konfiguration wandert automatisch mit**, denn Regeln und
+Crontabs liegen im Vault (`_system/regeln.json`). Auf dem zweiten PC also
+nur syncen lassen und `Installieren-und-Starten.bat` doppelklicken.
+
+Zwei Dinge sind dafür vorbereitet:
+
+- **LLM-Einstellungen pro Rechner:** Haben die PCs unterschiedliche Modelle
+  oder Server (z. B. LM Studio nur auf einem), im ⚙-Tab den Haken
+  **„Nur für diesen Rechner speichern"** setzen. Das landet in
+  `_system/regeln.lokal.json`, die nicht gesynct werden sollte
+  (steht in `.gitignore`; bei Syncthing/OneDrive die Datei vom Sync
+  ausnehmen). Regeln und Crontabs bleiben immer geteilt.
+- **Regeln an einen Rechner binden:** Damit eine Crontab-Regel nicht auf
+  beiden PCs gleichzeitig läuft (doppelte Vorschläge!), im Regel-Editor das
+  Feld **„Nur auf Rechner"** ausfüllen — der eigene Rechnername wird
+  angezeigt. Leer = Regel läuft überall.
+
 ## Bedeutungssuche (optional, empfohlen)
 
 [qmd](https://github.com/tobi/qmd) installieren, dann:

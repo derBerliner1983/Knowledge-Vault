@@ -17,7 +17,8 @@ const GRAPH_JSON = path.join(__dirname, "graph.json");
 const CONFIG_PATH = path.join(__dirname, "regeln.json");
 const LOG_PATH = path.join(__dirname, "automat-log.md");
 
-const leseConfig = () => JSON.parse(fs.readFileSync(CONFIG_PATH, "utf8"));
+const os = require("os");
+const leseConfig = () => automat.ladeKonfig() || JSON.parse(fs.readFileSync(CONFIG_PATH, "utf8"));
 
 function leseBody(req) {
   return new Promise((resolve, reject) => {
@@ -142,26 +143,38 @@ const server = http.createServer(async (req, res) => {
   if (url.pathname === "/api/config" && req.method === "GET") {
     try {
       const cfg = leseConfig();
-      antworte(res, 200, { llm: cfg.llm || {}, regeln: cfg.regeln || [] });
+      antworte(res, 200, {
+        llm: cfg.llm || {},
+        regeln: cfg.regeln || [],
+        llmLokal: !!cfg._llmLokal,
+        rechner: os.hostname(),
+      });
     } catch (err) { antworte(res, 500, { fehler: err.message }); }
     return;
   }
 
-  // Konfiguration aus der GUI speichern — validiert, mit Backup
+  // Konfiguration aus der GUI speichern — validiert, mit Backup.
+  // llmLokal=true: LLM-Einstellungen nur für diesen Rechner (regeln.lokal.json,
+  // wird nicht mitgesynct) — Regeln und Crontabs bleiben immer geteilt.
   if (url.pathname === "/api/config" && req.method === "POST") {
     try {
       const neu = await leseBody(req);
       const fehler = pruefeConfig(neu);
       if (fehler.length) { antworte(res, 400, { fehler: fehler.join(" · ") }); return; }
-      const alt = leseConfig();
+      const geteilt = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf8"));
+      fs.writeFileSync(CONFIG_PATH + ".bak", JSON.stringify(geteilt, null, 2));
       const speichern = {
-        llm: neu.llm,
+        llm: neu.llmLokal ? geteilt.llm : neu.llm,
         regeln: neu.regeln,
-        _hilfe: alt._hilfe,
-        _ergebnis_arten: alt._ergebnis_arten,
+        _hilfe: geteilt._hilfe,
+        _ergebnis_arten: geteilt._ergebnis_arten,
       };
-      fs.writeFileSync(CONFIG_PATH + ".bak", JSON.stringify(alt, null, 2));
       fs.writeFileSync(CONFIG_PATH, JSON.stringify(speichern, null, 2));
+      if (neu.llmLokal) {
+        fs.writeFileSync(automat.CONFIG_LOKAL, JSON.stringify({ llm: neu.llm }, null, 2));
+      } else if (fs.existsSync(automat.CONFIG_LOKAL)) {
+        fs.unlinkSync(automat.CONFIG_LOKAL);
+      }
       antworte(res, 200, { ok: true });
     } catch (err) { antworte(res, 500, { fehler: err.message }); }
     return;

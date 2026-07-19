@@ -22,11 +22,13 @@
 "use strict";
 
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const { spawnSync, execSync } = require("child_process");
 
 const VAULT_ROOT = path.resolve(__dirname, "..");
 const CONFIG_PATH = path.join(__dirname, "regeln.json");
+const CONFIG_LOKAL = path.join(__dirname, "regeln.lokal.json");
 const STATE_PATH = path.join(__dirname, ".automat-state.json");
 const LOG_PATH = path.join(__dirname, "automat-log.md");
 const VORSCHLAEGE = path.join(VAULT_ROOT, "00 Inbox", "_Automat-Vorschläge.md");
@@ -67,6 +69,20 @@ function cronMatches(expr, d) {
 
 function loadJson(p, fallback) {
   try { return JSON.parse(fs.readFileSync(p, "utf8")); } catch { return fallback; }
+}
+
+/**
+ * Konfiguration laden: regeln.json (geteilt, synct mit dem Vault) plus
+ * optional regeln.lokal.json (nur dieser Rechner, wird nicht gesynct) —
+ * die lokale Datei überschreibt die LLM-Einstellungen.
+ */
+function ladeKonfig() {
+  const cfg = loadJson(CONFIG_PATH, null);
+  if (!cfg) return null;
+  const lokal = loadJson(CONFIG_LOKAL, null);
+  if (lokal && lokal.llm) cfg.llm = Object.assign({}, cfg.llm, lokal.llm);
+  cfg._llmLokal = !!(lokal && lokal.llm);
+  return cfg;
 }
 const state = loadJson(STATE_PATH, { verarbeitet: {} });
 const saveState = () => fs.writeFileSync(STATE_PATH, JSON.stringify(state, null, 2));
@@ -358,6 +374,12 @@ function neueDateien(ordner) {
 }
 
 async function laufeRegel(regel, llmCfg) {
+  // Regel an einen Rechner gebunden? (Vault auf mehreren PCs gesynct —
+  // so läuft eine Crontab-Regel nur auf dem benannten Rechner.)
+  if (regel.rechner && regel.rechner.trim() &&
+      regel.rechner.trim().toLowerCase() !== os.hostname().toLowerCase()) {
+    return;
+  }
   try {
     if (regel.aktion === "index") {
       const r = spawnSync(process.execPath, [path.join(__dirname, "indexer.js")], { encoding: "utf8" });
@@ -405,7 +427,7 @@ async function laufeRegel(regel, llmCfg) {
 // --- Hauptprogramm -----------------------------------------------------------
 
 async function main() {
-  const cfg = loadJson(CONFIG_PATH, null);
+  const cfg = ladeKonfig();
   if (!cfg) { console.error(`Keine gültige ${CONFIG_PATH}`); process.exit(1); }
   const regeln = (cfg.regeln || []).filter((r) => r.aktiv !== false);
   const args = process.argv.slice(2);
@@ -429,7 +451,7 @@ async function main() {
     if (minute === letzteMinute) return;
     letzteMinute = minute;
     // Konfiguration bei jedem Tick frisch lesen — die GUI speichert hierhin.
-    const aktuelleCfg = loadJson(CONFIG_PATH, cfg);
+    const aktuelleCfg = ladeKonfig() || cfg;
     const aktuelleRegeln = (aktuelleCfg.regeln || []).filter((r) => r.aktiv !== false);
     for (const r of aktuelleRegeln) {
       try {
@@ -443,6 +465,6 @@ async function main() {
   setInterval(tick, 20000);
 }
 
-module.exports = { frageLLM, listeModelle, aufloeseModell, auftrag, laufeRegel, fuehreAktionenAus, cronMatches };
+module.exports = { frageLLM, listeModelle, aufloeseModell, auftrag, laufeRegel, fuehreAktionenAus, cronMatches, ladeKonfig, CONFIG_LOKAL };
 
 if (require.main === module) main();

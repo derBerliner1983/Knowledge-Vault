@@ -50,6 +50,11 @@
             <input id="llm-schluessel" type="password" placeholder="leer lassen, wenn keiner nötig">
           </label>
         </div>
+        <label class="zeile-checkbox">
+          <input type="checkbox" id="llm-lokal">
+          <span>Nur für diesen Rechner (<b id="rechner-name">…</b>) speichern — für Vaults,
+          die auf mehrere PCs gesynct werden. Regeln &amp; Crontabs bleiben immer geteilt.</span>
+        </label>
         <div class="reihe">
           <button id="llm-speichern" class="primaer">LLM-Einstellungen speichern</button>
           <span id="llm-meldung" class="dim"></span>
