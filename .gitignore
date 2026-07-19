@@ -4,3 +4,4 @@ node_modules/
 .trash/
 _system/.automat-state.json
 _system/automat-log.md
+_system/regeln.json.bak

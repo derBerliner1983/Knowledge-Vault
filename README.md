@@ -82,6 +82,14 @@ aktualisiert sich von selbst nach wenigen Sekunden — kein Knopfdruck nötig.
   Ausgeführt wird immer geprüft: nur `.md`-Dateien, nur innerhalb des
   Vaults, Systemordner sind tabu, nichts wird überschrieben.
 - **Regeln:** jede Crontab-Regel per **„▶ Jetzt"** sofort starten.
+- **Alles direkt in der GUI konfigurierbar:** LLM-Einstellungen (Anbieter,
+  URL, Modell, API-Key) und **unbegrenzt viele Regeln** — anlegen
+  („+ Neue Regel"), bearbeiten, an-/abschalten, löschen. Zeitpläne per
+  Crontab-Feld mit Vorlagen-Auswahl (alle 15 Min, täglich 21:00, werktags 9:00 …).
+  „Speichern" schreibt geprüft nach `_system/regeln.json` (mit Backup
+  `.bak`) — der laufende Automat übernimmt Änderungen **sofort**, ohne
+  Neustart. Die Datei von Hand zu bearbeiten geht weiterhin, ist aber
+  nicht mehr nötig.
 
 ## Obsidian anbinden
 

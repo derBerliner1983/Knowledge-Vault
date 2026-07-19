@@ -32,6 +32,35 @@ function antworte(res, status, daten) {
   res.end(JSON.stringify(daten));
 }
 
+/** Validierung der GUI-Konfiguration. Gibt eine Liste deutscher Fehlermeldungen zurück. */
+function pruefeConfig(cfg) {
+  const fehler = [];
+  if (!cfg || typeof cfg !== "object") return ["Ungültige Daten."];
+  const llm = cfg.llm || {};
+  if (!["lmstudio", "ollama", "openai", "claude-cli"].includes(llm.anbieter)) {
+    fehler.push(`Unbekannter LLM-Anbieter: "${llm.anbieter}"`);
+  }
+  if (!Array.isArray(cfg.regeln)) return [...fehler, "regeln muss eine Liste sein."];
+  const namen = new Set();
+  cfg.regeln.forEach((r, i) => {
+    const wo = `Regel ${i + 1}${r.name ? ` („${r.name}")` : ""}`;
+    if (!r.name || !String(r.name).trim()) fehler.push(`${wo}: Name fehlt.`);
+    else if (namen.has(r.name)) fehler.push(`${wo}: Name doppelt.`);
+    namen.add(r.name);
+    if (!["llm", "index", "befehl"].includes(r.aktion)) fehler.push(`${wo}: unbekannte Aktion "${r.aktion}".`);
+    if (r.zeitplan) {
+      try { automat.cronMatches(r.zeitplan, new Date()); }
+      catch (e) { fehler.push(`${wo}: ${e.message}`); }
+    } else {
+      fehler.push(`${wo}: Zeitplan fehlt.`);
+    }
+    if (r.aktion === "befehl" && (!r.befehl || !String(r.befehl).trim())) fehler.push(`${wo}: Befehl fehlt.`);
+    if (r.aktion === "llm" && (!r.prompt || !String(r.prompt).trim())) fehler.push(`${wo}: Prompt fehlt.`);
+    if (r.ausloeser && r.ausloeser.typ === "neue-datei" && !r.ausloeser.ordner) fehler.push(`${wo}: Auslöser-Ordner fehlt.`);
+  });
+  return fehler;
+}
+
 const argPort = process.argv.indexOf("--port");
 const PORT = argPort !== -1 ? Number(process.argv[argPort + 1]) : Number(process.env.PORT || 7777);
 const HOST = process.env.HOST || "127.0.0.1";
@@ -105,6 +134,35 @@ const server = http.createServer(async (req, res) => {
         anbieter: cfg.anbieter, url: cfg.url, modell: cfg.modell,
         erreichbar: !fehler, fehler, ...modelle,
       });
+    } catch (err) { antworte(res, 500, { fehler: err.message }); }
+    return;
+  }
+
+  // Komplette Konfiguration lesen (für den Editor in der GUI)
+  if (url.pathname === "/api/config" && req.method === "GET") {
+    try {
+      const cfg = leseConfig();
+      antworte(res, 200, { llm: cfg.llm || {}, regeln: cfg.regeln || [] });
+    } catch (err) { antworte(res, 500, { fehler: err.message }); }
+    return;
+  }
+
+  // Konfiguration aus der GUI speichern — validiert, mit Backup
+  if (url.pathname === "/api/config" && req.method === "POST") {
+    try {
+      const neu = await leseBody(req);
+      const fehler = pruefeConfig(neu);
+      if (fehler.length) { antworte(res, 400, { fehler: fehler.join(" · ") }); return; }
+      const alt = leseConfig();
+      const speichern = {
+        llm: neu.llm,
+        regeln: neu.regeln,
+        _hilfe: alt._hilfe,
+        _ergebnis_arten: alt._ergebnis_arten,
+      };
+      fs.writeFileSync(CONFIG_PATH + ".bak", JSON.stringify(alt, null, 2));
+      fs.writeFileSync(CONFIG_PATH, JSON.stringify(speichern, null, 2));
+      antworte(res, 200, { ok: true });
     } catch (err) { antworte(res, 500, { fehler: err.message }); }
     return;
   }

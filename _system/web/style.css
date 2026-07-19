@@ -165,13 +165,43 @@ html, body {
   max-height: 180px; overflow-y: auto;
 }
 
-.regel {
-  display: flex; justify-content: space-between; align-items: center; gap: 10px;
-  padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  font-size: 13px;
+/* Formular-Raster (LLM-Einstellungen, Regel-Karten) */
+.form-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px;
+  margin: 10px 0;
 }
-.regel.aus { opacity: 0.45; }
-.regel button { flex-shrink: 0; }
+.form-grid label, #automat-card label {
+  display: flex; flex-direction: column; gap: 4px;
+  font-size: 11px; color: var(--text-dim);
+  letter-spacing: 0.04em;
+}
+#automat-card input[type="text"], #automat-card input[type="password"],
+#automat-card select, #automat-card textarea {
+  padding: 7px 10px;
+  background: rgba(255, 255, 255, 0.04); color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px;
+  font: inherit; font-size: 13px; outline: none; width: 100%;
+}
+#automat-card input:focus, #automat-card select:focus, #automat-card textarea:focus {
+  border-color: var(--accent);
+}
+
+/* Regel-Karten */
+.regel-karte {
+  border: 1px solid rgba(255, 255, 255, 0.10); border-radius: 10px;
+  padding: 12px; margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.regel-karte.aus { opacity: 0.5; }
+.regel-kopf {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
+}
+.regel-kopf input[type="checkbox"] {
+  width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0;
+}
+.regel-name { flex: 1; font-weight: 600; }
+.regel-kopf button { flex-shrink: 0; }
+.regel-karte textarea { resize: vertical; }
 
 /* Rechte Seitenleiste: Ansichts-Umschalter + Detail-Panel (wie im Video) */
 #side {

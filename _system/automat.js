@@ -421,15 +421,19 @@ async function main() {
 
   console.log(`Der Automat läuft — ${regeln.length} aktive Regel(n), Prüfung jede Minute. Beenden mit Strg+C.`);
   for (const r of regeln) console.log(`  · ${r.name} (${r.zeitplan})`);
+  console.log("Änderungen an _system/regeln.json (auch aus der GUI) gelten sofort.");
   let letzteMinute = -1;
   const tick = async () => {
     const jetzt = new Date();
     const minute = jetzt.getMinutes() + jetzt.getHours() * 60;
     if (minute === letzteMinute) return;
     letzteMinute = minute;
-    for (const r of regeln) {
+    // Konfiguration bei jedem Tick frisch lesen — die GUI speichert hierhin.
+    const aktuelleCfg = loadJson(CONFIG_PATH, cfg);
+    const aktuelleRegeln = (aktuelleCfg.regeln || []).filter((r) => r.aktiv !== false);
+    for (const r of aktuelleRegeln) {
       try {
-        if (r.zeitplan && cronMatches(r.zeitplan, jetzt)) await laufeRegel(r, cfg.llm || {});
+        if (r.zeitplan && cronMatches(r.zeitplan, jetzt)) await laufeRegel(r, aktuelleCfg.llm || {});
       } catch (err) {
         log(`Regel „${r.name}": FEHLER im Zeitplan — ${err.message}`);
       }

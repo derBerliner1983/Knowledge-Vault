@@ -31,6 +31,29 @@
       <section>
         <h3>Lokales LLM</h3>
         <div id="llm-status">Prüfe …</div>
+        <div class="form-grid">
+          <label>Anbieter
+            <select id="llm-anbieter">
+              <option value="lmstudio">LM Studio</option>
+              <option value="ollama">Ollama</option>
+              <option value="openai">OpenAI-kompatibel</option>
+              <option value="claude-cli">Claude Code (CLI)</option>
+            </select>
+          </label>
+          <label>Server-URL
+            <input id="llm-url" type="text" placeholder="http://localhost:1234">
+          </label>
+          <label>Modell
+            <select id="llm-modell"></select>
+          </label>
+          <label>API-Key (optional)
+            <input id="llm-schluessel" type="password" placeholder="leer lassen, wenn keiner nötig">
+          </label>
+        </div>
+        <div class="reihe">
+          <button id="llm-speichern" class="primaer">LLM-Einstellungen speichern</button>
+          <span id="llm-meldung" class="dim"></span>
+        </div>
       </section>
 
       <section>
@@ -46,8 +69,13 @@
       </section>
 
       <section>
-        <h3>Regeln (Crontab — <code>_system/regeln.json</code>)</h3>
+        <h3>Regeln (Crontab — unbegrenzt, direkt hier bearbeiten)</h3>
         <div id="regeln"></div>
+        <div class="reihe">
+          <button id="regel-neu">+ Neue Regel</button>
+          <button id="regeln-speichern" class="primaer">Alle Regeln speichern</button>
+          <span id="regeln-meldung" class="dim"></span>
+        </div>
       </section>
 
       <section>
