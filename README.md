@@ -14,7 +14,12 @@ Claude ist der Bibliothekar, die Graph-Ansicht ist nur das Fenster.
 2. Im Ordner **`Installieren-und-Starten.bat`** doppelklicken — das Skript
    installiert Node.js automatisch (über winget), falls es fehlt, indexiert den
    Vault, startet den Server und öffnet den Browser. Fenster offen lassen.
-3. Für die Zeitplan-Regeln zusätzlich **`Automat-Starten.bat`** doppelklicken.
+   **Ein Fenster = alles läuft:** Graph-Ansicht, Live-Überwachung und der
+   Automat mit allen Crontab-Regeln.
+3. Optional: **`Autostart-Einrichten.bat`** doppelklicken — dann startet der
+   Server ab der nächsten Anmeldung automatisch und unsichtbar mit Windows;
+   die Ansicht ist dann immer unter http://localhost:7777 da.
+   Rückgängig: `Autostart-Entfernen.bat`.
 
 ### Mac / Linux / manuell
 
@@ -110,14 +115,21 @@ Neues in `00 Inbox` ablegen und regelmäßig den Sortier-Prompt aus
 
 ## Der Automat — Crontabs, Regeln und lokales LLM (optional)
 
-Der Automat (`_system/automat.js`) führt Regeln nach Zeitplan aus —
-Crontab-Syntax, definiert in **`_system/regeln.json`**. Damit geht genau das
-Muster „wenn etwas in der Inbox landet, dann mache …":
+Der Automat führt Regeln nach Zeitplan aus — Crontab-Syntax, definiert in
+**`_system/regeln.json`** (am einfachsten über die GUI, ⚙-Tab). Damit geht
+genau das Muster „wenn etwas in der Inbox landet, dann mache …".
+
+**Er läuft automatisch im Server mit** — `npm start` (bzw. die .bat)
+genügt, es ist kein zweites Programm nötig. Die Zeiten sind die lokale
+Uhrzeit deines Rechners. Nur für Sonderfälle gibt es zusätzlich:
 
 ```bash
-npm run automat           # läuft dauerhaft, prüft jede Minute
+npm run automat           # Automat allein, ohne Graph-Server (headless)
 npm run automat:einmal    # ein einzelner Durchlauf (für OS-Crontab/Taskplaner)
 ```
+
+(Nicht beides gleichzeitig mit `npm start` laufen lassen, sonst laufen
+Regeln doppelt.)
 
 Eine Regel besteht aus:
 

@@ -47,7 +47,9 @@ node _system\indexer.js
 echo.
 
 echo Starte die Graph-Ansicht auf http://localhost:7777
+echo Der Automat (Crontab-Regeln) und die Live-Ueberwachung laufen mit.
 echo (Dieses Fenster offen lassen - Beenden mit Strg+C oder Fenster schliessen)
+echo Tipp: "Autostart-Einrichten.bat" startet alles kuenftig automatisch mit Windows.
 echo.
 start "" "http://localhost:7777"
 node _system\server.js

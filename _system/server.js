@@ -238,9 +238,41 @@ const server = http.createServer(async (req, res) => {
   res.end(fs.readFileSync(full));
 });
 
+// --- Eingebauter Automat: Crontab-Regeln laufen im Server mit -----------------
+// Kein zweites Programm nötig — der Server prüft jede Minute die Regeln aus
+// _system/regeln.json (GUI-Änderungen gelten sofort).
+
+let letzteMinute = -1;
+let automatLaeuft = false;
+
+async function automatTick() {
+  if (automatLaeuft) return;
+  const jetzt = new Date();
+  const minute = jetzt.getMinutes() + jetzt.getHours() * 60;
+  if (minute === letzteMinute) return;
+  letzteMinute = minute;
+  automatLaeuft = true;
+  try {
+    const cfg = leseConfig();
+    for (const r of (cfg.regeln || []).filter((x) => x.aktiv !== false)) {
+      try {
+        if (r.zeitplan && automat.cronMatches(r.zeitplan, jetzt)) {
+          await automat.laufeRegel(r, cfg.llm || {});
+        }
+      } catch (err) {
+        console.log(`Regel „${r.name}": FEHLER — ${err.message}`);
+      }
+    }
+  } catch {}
+  automatLaeuft = false;
+}
+
 server.listen(PORT, HOST, () => {
   reindex();
   starteUeberwachung();
+  setInterval(automatTick, 20000);
+  automatTick();
   console.log(`Second-Brain-Graph läuft: http://localhost:${PORT}`);
+  console.log("Der Automat läuft mit: Crontab-Regeln aus _system/regeln.json werden jede Minute geprüft.");
   console.log("Beenden mit Strg+C. Neu indexieren: npm run index (oder Knopf in der Ansicht).");
 });
