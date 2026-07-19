@@ -6,7 +6,9 @@
   "scripts": {
     "index": "node _system/indexer.js",
     "start": "node _system/server.js",
-    "dev": "node _system/server.js --port 7777"
+    "dev": "node _system/server.js --port 7777",
+    "automat": "node _system/automat.js",
+    "automat:einmal": "node _system/automat.js --einmal"
   },
   "engines": {
     "node": ">=18"

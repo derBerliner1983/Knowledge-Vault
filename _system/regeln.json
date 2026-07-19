@@ -1,0 +1,43 @@
+{
+  "llm": {
+    "anbieter": "ollama",
+    "url": "http://localhost:11434",
+    "modell": "qwen2.5:7b",
+    "schluessel": "",
+    "_hilfe": "anbieter: 'ollama' (Standard, lokal), 'openai' (jeder OpenAI-kompatible Server, z. B. LM Studio mit url http://localhost:1234/v1) oder 'claude-cli' (nutzt das installierte Claude Code). 'schluessel' nur falls der Server einen API-Key verlangt."
+  },
+  "regeln": [
+    {
+      "name": "Inbox-Eingang einordnen",
+      "aktiv": true,
+      "zeitplan": "*/15 * * * *",
+      "ausloeser": { "typ": "neue-datei", "ordner": "00 Inbox" },
+      "aktion": "llm",
+      "prompt": "Du bist der Bibliothekar meines Obsidian-Vaults. Lies die folgende neue Notiz aus der Inbox und antworte kurz auf Deutsch:\n1) Drei bis fünf passende Tags (kommagetrennt)\n2) Ziel-Ordner-Vorschlag: 01 Daily Notes, 02 Projekte, 03 Wissen, 04 Personen oder 99 Archiv\n3) Eine Ein-Satz-Zusammenfassung\nVerschiebe nichts selbst — du machst nur einen Vorschlag.",
+      "ergebnis": "vorschlag"
+    },
+    {
+      "name": "Stündlich neu indexieren",
+      "aktiv": true,
+      "zeitplan": "0 * * * *",
+      "aktion": "index"
+    },
+    {
+      "name": "qmd-Suchindex nachts aktualisieren",
+      "aktiv": false,
+      "zeitplan": "30 3 * * *",
+      "aktion": "befehl",
+      "befehl": "qmd embed"
+    },
+    {
+      "name": "Beispiel: Tages-Zusammenfassung der Daily Note",
+      "aktiv": false,
+      "zeitplan": "0 21 * * *",
+      "ausloeser": { "typ": "neue-datei", "ordner": "01 Daily Notes" },
+      "aktion": "llm",
+      "prompt": "Fasse diese Tagesnotiz in drei Stichpunkten zusammen und nenne offene Aufgaben.",
+      "ergebnis": "anhang"
+    }
+  ],
+  "_ergebnis_arten": "vorschlag = Antwort landet in '00 Inbox/_Automat-Vorschläge.md' (Standard, ändert keine Notiz) · anhang = Antwort wird unten an die Notiz angehängt · tags = kommagetrennte Tags aus der Antwort werden ins Frontmatter der Notiz gemischt"
+}
