@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zweites Gehirn — Graph</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='%23ff9a1f'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="graph"></canvas>
+
+  <header id="topbar">
+    <div id="brand">
+      <span class="dot"></span>
+      <h1>Zweites&nbsp;<em>Gehirn</em></h1>
+      <span id="stats"></span>
+    </div>
+    <div id="controls">
+      <input id="search" type="search" placeholder="Suchen … (Titel, Tag, Pfad)" autocomplete="off">
+      <button id="reindex" title="Vault neu einlesen">⟳ Neu indexieren</button>
+    </div>
+  </header>
+
+  <aside id="legend"></aside>
+
+  <aside id="panel" class="hidden">
+    <button id="panel-close" title="Schließen">×</button>
+    <h2 id="panel-title"></h2>
+    <p id="panel-path"></p>
+    <div id="panel-tags"></div>
+    <div id="panel-neighbors"></div>
+    <a id="panel-open" class="button" href="#">In Obsidian öffnen</a>
+  </aside>
+
+  <script src="vendor/d3.v7.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
