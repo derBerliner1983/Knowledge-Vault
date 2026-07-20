@@ -39,7 +39,43 @@
     fuelleLLMFormular();
     zeichneRegeln();
     ladeLLMStatus();
+    ladeUndoListe();
     ladeLog();
+  }
+
+  // --- Undo-Verlauf ----------------------------------------------------------
+
+  async function ladeUndoListe() {
+    const el = document.getElementById("undo-liste");
+    try {
+      const d = await (await fetch("/api/undo")).json();
+      el.innerHTML = "";
+      el.className = "";
+      const verlauf = (d.verlauf || []).slice().reverse();
+      if (!verlauf.length) { el.textContent = "— noch keine ausgeführten Pläne —"; el.className = "dim"; return; }
+      for (const e of verlauf) {
+        const zeile = document.createElement("div");
+        zeile.className = "regel";
+        const info = document.createElement("div");
+        info.innerHTML = `<b>${e.beschreibung.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</b><br>` +
+          `<span class="dim">${e.zeit} · ${e.schritte} Schritt(e)</span>`;
+        const knopf = document.createElement("button");
+        knopf.textContent = "↩ Rückgängig";
+        knopf.onclick = async () => {
+          knopf.disabled = true; knopf.textContent = "läuft …";
+          try {
+            const res = await (await fetch("/api/undo", {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ index: e.index }),
+            })).json();
+            document.getElementById("automat-log").textContent =
+              (res.protokoll || [res.fehler]).join("\n");
+          } finally { ladeUndoListe(); ladeLog(); }
+        };
+        zeile.append(info, knopf);
+        el.append(zeile);
+      }
+    } catch (err) { el.textContent = err.message; }
   }
 
   // --- LLM-Status + Einstellungen -------------------------------------------
@@ -328,6 +364,7 @@
       pre.textContent = protokoll.join("\n") || "—";
       box.append(pre);
       ladeLog();
+      ladeUndoListe();
     } else if (plan.aktionen.length) {
       const los = document.createElement("button");
       los.className = "primaer";

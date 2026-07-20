@@ -100,6 +100,11 @@ aktualisiert sich von selbst nach wenigen Sekunden — kein Knopfdruck nötig.
   Ausgeführt wird immer geprüft: nur `.md`-Dateien, nur innerhalb des
   Vaults, Systemordner sind tabu, nichts wird überschrieben.
 - **Regeln:** jede Crontab-Regel per **„▶ Jetzt"** sofort starten.
+- **Verlauf & Rückgängig:** Jeder ausgeführte Aktionsplan (Auftrag oder
+  Regel) erscheint im Abschnitt „Verlauf" und lässt sich per
+  **„↩ Rückgängig"** komplett umkehren — Verschobenes kommt zurück,
+  geänderte Notizen werden wiederhergestellt, angelegte Notizen wandern
+  in den Papierkorb (`_system/.papierkorb`) statt gelöscht zu werden.
 - **Alles direkt in der GUI konfigurierbar:** LLM-Einstellungen (Anbieter,
   URL, Modell, API-Key) und **unbegrenzt viele Regeln** — anlegen
   („+ Neue Regel"), bearbeiten, an-/abschalten, löschen. Zeitpläne per

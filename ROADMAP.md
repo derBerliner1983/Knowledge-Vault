@@ -20,16 +20,14 @@ Wahrheit, die KI schlägt vor, der Mensch entscheidet.
 | Multi-PC-Sync | Konfiguration synct mit dem Vault; `regeln.lokal.json` pro Rechner; Regeln per „Nur auf Rechner" bindbar |
 | Inhalts-Suche | Volltext mit Fundstellen-Ausschnitten + qmd-Bedeutungssuche (falls installiert), Klick springt zum Knoten |
 | Notiz-Vorschau | Notiz gerendert im Panel (Tabellen, Code, Listen), klickbare Wikilinks — Lesen ohne App-Wechsel |
+| Undo | Jeder ausgeführte Aktionsplan im Verlauf, per „↩ Rückgängig" umkehrbar; entfernte Notizen landen im Papierkorb statt gelöscht zu werden |
 
 ## 🔨 Als Nächstes (in dieser Reihenfolge)
 
-1. **Undo für Aktionspläne** — jede ausgeführte Aktion wird protokolliert
-   und ist per „↩ Rückgängig" im ⚙-Tab umkehrbar (verschieben zurück,
-   geänderte Dateien wiederherstellen, angelegte Notizen entfernen).
-2. **Aufräum-Berichte (ohne LLM)** — deterministischer Bericht im ⚙-Tab:
+1. **Aufräum-Berichte (ohne LLM)** — deterministischer Bericht im ⚙-Tab:
    kaputte Wikilinks, verwaiste Notizen, Duplikat-Verdacht, Notizen ohne
    Tags, Altbestand in der Inbox.
-3. **Wiki-Ingest-Regel** — Quellen-Ordner `05 Quellen`; neue Quelle →
+2. **Wiki-Ingest-Regel** — Quellen-Ordner `05 Quellen`; neue Quelle →
    LLM entwirft eine Wiki-Seite nach `09 Wiki/_SCHEMA.md` samt
    Log-Eintrag (als Vorschlag; Regelvorlage liegt bei, standardmäßig aus).
 

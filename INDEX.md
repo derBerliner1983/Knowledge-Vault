@@ -19,7 +19,7 @@ Regel: Jeder neue Bereich bekommt sofort eine Indexzeile.
 
 ## Bestand (automatisch gepflegt)
 
-Stand: 2026-07-20 · 16 Notizen · 15 Verknüpfungen
+Stand: 2026-07-20 · 17 Notizen · 15 Verknüpfungen
 
 | Bereich | Notizen |
 |---|---|
@@ -31,5 +31,5 @@ Stand: 2026-07-20 · 16 Notizen · 15 Verknüpfungen
 | 08 Vorlagen | 4 |
 | 09 Wiki | 2 |
 | 99 Archiv | 1 |
-| Wurzel | 4 |
+| Wurzel | 5 |
 <!-- graph:end -->

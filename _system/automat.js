@@ -244,9 +244,21 @@ function freierZielpfad(norm) {
   return ziel;
 }
 
-/** Führt einen geprüften Aktionsplan aus. Gibt Protokollzeilen zurück. */
-function fuehreAktionenAus(aktionen) {
+/**
+ * Führt einen geprüften Aktionsplan aus. Gibt Protokollzeilen zurück.
+ * Jeder Lauf landet im Undo-Verlauf (.automat-undo.json) und ist über
+ * macheRueckgaengig() umkehrbar.
+ */
+const UNDO_PATH = path.join(__dirname, ".automat-undo.json");
+const PAPIERKORB = path.join(__dirname, ".papierkorb");
+
+function ladeUndo() {
+  return loadJson(UNDO_PATH, []);
+}
+
+function fuehreAktionenAus(aktionen, beschreibung = "Aktionsplan") {
   const protokoll = [];
+  const undoSchritte = [];
   for (const a of aktionen || []) {
     try {
       if (a.tu === "verschieben") {
@@ -257,17 +269,21 @@ function fuehreAktionenAus(aktionen) {
         const ziel = freierZielpfad(nach);
         fs.mkdirSync(path.dirname(ziel), { recursive: true });
         fs.renameSync(quelle, ziel);
-        protokoll.push(`✓ verschoben: ${von} → ${path.relative(VAULT_ROOT, ziel)}`);
+        const zielRel = path.relative(VAULT_ROOT, ziel).replace(/\\/g, "/");
+        undoSchritte.push({ tu: "verschieben", von: zielRel, nach: von });
+        protokoll.push(`✓ verschoben: ${von} → ${zielRel}`);
       } else if (a.tu === "tags") {
         const datei = sichererPfad(a.datei);
         const voll = path.join(VAULT_ROOT, datei);
         if (!fs.existsSync(voll)) throw new Error(`Datei fehlt: ${datei}`);
+        undoSchritte.push({ tu: "wiederherstellen", datei, inhalt: fs.readFileSync(voll, "utf8") });
         mischeTags(voll, (a.tags || []).join(", "));
         protokoll.push(`✓ Tags ergänzt: ${datei} (${(a.tags || []).join(", ")})`);
       } else if (a.tu === "anhaengen") {
         const datei = sichererPfad(a.datei);
         const voll = path.join(VAULT_ROOT, datei);
         if (!fs.existsSync(voll)) throw new Error(`Datei fehlt: ${datei}`);
+        undoSchritte.push({ tu: "wiederherstellen", datei, inhalt: fs.readFileSync(voll, "utf8") });
         fs.appendFileSync(voll, `\n\n${String(a.text || "").slice(0, 20000)}\n`);
         protokoll.push(`✓ angehängt an: ${datei}`);
       } else if (a.tu === "neue-notiz") {
@@ -275,7 +291,9 @@ function fuehreAktionenAus(aktionen) {
         const ziel = freierZielpfad(datei);
         fs.mkdirSync(path.dirname(ziel), { recursive: true });
         fs.writeFileSync(ziel, String(a.text || "").slice(0, 40000));
-        protokoll.push(`✓ Notiz angelegt: ${path.relative(VAULT_ROOT, ziel)}`);
+        const zielRel = path.relative(VAULT_ROOT, ziel).replace(/\\/g, "/");
+        undoSchritte.push({ tu: "entfernen", datei: zielRel });
+        protokoll.push(`✓ Notiz angelegt: ${zielRel}`);
       } else {
         protokoll.push(`✗ unbekannte Aktion übersprungen: ${JSON.stringify(a).slice(0, 120)}`);
       }
@@ -283,10 +301,67 @@ function fuehreAktionenAus(aktionen) {
       protokoll.push(`✗ ${a.tu || "?"}: ${err.message}`);
     }
   }
+  if (undoSchritte.length) {
+    const verlauf = ladeUndo();
+    verlauf.push({
+      zeit: stamp(),
+      beschreibung: String(beschreibung).slice(0, 120),
+      schritte: undoSchritte.reverse(), // rückwärts abarbeiten
+    });
+    fs.writeFileSync(UNDO_PATH, JSON.stringify(verlauf.slice(-20), null, 2));
+  }
   // Nach Änderungen den Katalog frisch halten
   if (protokoll.some((z) => z.startsWith("✓"))) {
     spawnSync(process.execPath, [path.join(__dirname, "indexer.js")]);
   }
+  return protokoll;
+}
+
+/**
+ * Macht einen Eintrag aus dem Undo-Verlauf rückgängig (Standard: den
+ * neuesten). Angelegte Notizen werden nicht gelöscht, sondern in
+ * _system/.papierkorb verschoben.
+ */
+function macheRueckgaengig(index = -1) {
+  const verlauf = ladeUndo();
+  if (!verlauf.length) return ["Nichts zum Rückgängigmachen."];
+  const i = index < 0 ? verlauf.length - 1 : index;
+  const eintrag = verlauf[i];
+  if (!eintrag) return [`Eintrag ${index} nicht gefunden.`];
+  const protokoll = [];
+  for (const s of eintrag.schritte || []) {
+    try {
+      if (s.tu === "verschieben") {
+        const von = sichererPfad(s.von);
+        const quelle = path.join(VAULT_ROOT, von);
+        if (!fs.existsSync(quelle)) throw new Error(`Datei fehlt inzwischen: ${von}`);
+        const ziel = freierZielpfad(sichererPfad(s.nach));
+        fs.mkdirSync(path.dirname(ziel), { recursive: true });
+        fs.renameSync(quelle, ziel);
+        protokoll.push(`✓ zurückverschoben: ${von} → ${path.relative(VAULT_ROOT, ziel)}`);
+      } else if (s.tu === "wiederherstellen") {
+        const datei = sichererPfad(s.datei);
+        fs.writeFileSync(path.join(VAULT_ROOT, datei), s.inhalt);
+        protokoll.push(`✓ wiederhergestellt: ${datei}`);
+      } else if (s.tu === "entfernen") {
+        const datei = sichererPfad(s.datei);
+        const voll = path.join(VAULT_ROOT, datei);
+        if (fs.existsSync(voll)) {
+          fs.mkdirSync(PAPIERKORB, { recursive: true });
+          fs.renameSync(voll, path.join(PAPIERKORB, Date.now() + "-" + path.basename(datei)));
+          protokoll.push(`✓ in den Papierkorb: ${datei} (_system/.papierkorb)`);
+        } else {
+          protokoll.push(`· schon weg: ${datei}`);
+        }
+      }
+    } catch (err) {
+      protokoll.push(`✗ ${s.tu}: ${err.message}`);
+    }
+  }
+  verlauf.splice(i, 1);
+  fs.writeFileSync(UNDO_PATH, JSON.stringify(verlauf, null, 2));
+  spawnSync(process.execPath, [path.join(__dirname, "indexer.js")]);
+  log(`Rückgängig: „${eintrag.beschreibung}" (${eintrag.zeit}) — ${protokoll.join(" · ")}`);
   return protokoll;
 }
 
@@ -349,7 +424,7 @@ async function auftrag(llmCfg, text, { ausfuehren = false, modell = null } = {})
   const plan = parseAktionsplan(antwort);
   let protokoll = null;
   if (ausfuehren) {
-    protokoll = fuehreAktionenAus(plan.aktionen);
+    protokoll = fuehreAktionenAus(plan.aktionen, `Auftrag: ${text.slice(0, 80)}`);
     log(`Auftrag „${text.slice(0, 60)}": ${protokoll.filter((z) => z.startsWith("✓")).length}/${plan.aktionen.length} Aktionen ausgeführt.`);
   } else {
     log(`Auftrag „${text.slice(0, 60)}": Plan mit ${plan.aktionen.length} Aktion(en) erstellt (nicht ausgeführt).`);
@@ -409,7 +484,7 @@ async function laufeRegel(regel, llmCfg) {
         else if (art === "tags" && d.rel) mischeTags(path.join(VAULT_ROOT, d.rel), antwort);
         else if (art === "aktionen") {
           const plan = parseAktionsplan(antwort);
-          const protokoll = fuehreAktionenAus(plan.aktionen);
+          const protokoll = fuehreAktionenAus(plan.aktionen, `Regel: ${regel.name}`);
           log(`Regel „${regel.name}": Aktionsplan — ${protokoll.join(" · ") || "nichts zu tun"}`);
         }
         else schreibeVorschlag(regel, d.rel, antwort);
@@ -465,6 +540,10 @@ async function main() {
   setInterval(tick, 20000);
 }
 
-module.exports = { frageLLM, listeModelle, aufloeseModell, auftrag, laufeRegel, fuehreAktionenAus, cronMatches, ladeKonfig, CONFIG_LOKAL };
+module.exports = {
+  frageLLM, listeModelle, aufloeseModell, auftrag, laufeRegel,
+  fuehreAktionenAus, macheRueckgaengig, ladeUndo,
+  cronMatches, ladeKonfig, CONFIG_LOKAL,
+};
 
 if (require.main === module) main();

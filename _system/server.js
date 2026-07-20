@@ -344,9 +344,27 @@ const server = http.createServer(async (req, res) => {
   // Einen zuvor geplanten Aktionsplan ausführen
   if (url.pathname === "/api/aktionen" && req.method === "POST") {
     try {
-      const { aktionen } = await leseBody(req);
+      const { aktionen, beschreibung } = await leseBody(req);
       if (!Array.isArray(aktionen)) { antworte(res, 400, { fehler: "aktionen fehlt." }); return; }
-      antworte(res, 200, { protokoll: automat.fuehreAktionenAus(aktionen) });
+      antworte(res, 200, { protokoll: automat.fuehreAktionenAus(aktionen, beschreibung || "Aktionsplan (GUI)") });
+    } catch (err) { antworte(res, 500, { fehler: err.message }); }
+    return;
+  }
+
+  // Undo-Verlauf lesen / rückgängig machen
+  if (url.pathname === "/api/undo" && req.method === "GET") {
+    try {
+      const verlauf = automat.ladeUndo().map((e, i) => ({
+        index: i, zeit: e.zeit, beschreibung: e.beschreibung, schritte: (e.schritte || []).length,
+      }));
+      antworte(res, 200, { verlauf });
+    } catch (err) { antworte(res, 500, { fehler: err.message }); }
+    return;
+  }
+  if (url.pathname === "/api/undo" && req.method === "POST") {
+    try {
+      const { index } = await leseBody(req);
+      antworte(res, 200, { protokoll: automat.macheRueckgaengig(typeof index === "number" ? index : -1) });
     } catch (err) { antworte(res, 500, { fehler: err.message }); }
     return;
   }

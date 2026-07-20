@@ -195,6 +195,14 @@ html, body {
   max-height: 180px; overflow-y: auto;
 }
 
+/* Einfache Zeilen-Listen (Undo-Verlauf) */
+.regel {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 13px;
+}
+.regel button { flex-shrink: 0; }
+
 /* Formular-Raster (LLM-Einstellungen, Regel-Karten) */
 .form-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px;
