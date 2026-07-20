@@ -214,6 +214,22 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Notiz-Inhalt für die Vorschau im Panel
+  if (url.pathname === "/api/notiz") {
+    try {
+      const rel = (url.searchParams.get("pfad") || "").replace(/\\/g, "/");
+      const norm = path.posix.normalize(rel).replace(/^\/+/, "");
+      const voll = path.join(VAULT_ROOT, norm);
+      if (
+        norm.startsWith("..") || !norm.toLowerCase().endsWith(".md") ||
+        IGNORIEREN.includes(norm.split("/")[0]) || !voll.startsWith(VAULT_ROOT) ||
+        !fs.existsSync(voll)
+      ) { antworte(res, 404, { fehler: "Notiz nicht gefunden." }); return; }
+      antworte(res, 200, { inhalt: fs.readFileSync(voll, "utf8").slice(0, 200000) });
+    } catch (err) { antworte(res, 500, { fehler: err.message }); }
+    return;
+  }
+
   // Inhalts-Suche: exakt (Volltext mit Fundstellen) oder bedeutung (qmd)
   if (url.pathname === "/api/suche") {
     const q = (url.searchParams.get("q") || "").trim();

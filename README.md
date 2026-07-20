@@ -71,6 +71,11 @@ ein-/ausblenden (im Nebel: Cluster wählen), Knoten anklicken für Details
 und **„In Obsidian öffnen"**, Knopf **„Neu indexieren"** liest den Vault
 frisch ein. Beenden mit `Strg+C`.
 
+**Lesen ohne App-Wechsel:** Ein Klick auf einen Knoten zeigt die Notiz
+**komplett gerendert** im Seitenpanel (Überschriften, Listen, Tabellen,
+Code, Zitate). Wikilinks darin sind klickbar und springen zur nächsten
+Notiz — zum Schreiben geht es per Knopf weiter nach Obsidian.
+
 **Suche:** Das Suchfeld filtert live den Graph (Titel, Tags, Pfad) und
 durchsucht gleichzeitig den **Inhalt aller Notizen** — Treffer erscheinen
 als Liste mit Fundstellen-Ausschnitten, ein Klick springt zur Notiz im

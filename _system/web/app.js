@@ -742,6 +742,102 @@ function buildLegend() {
   }
 }
 
+// Kleiner, sicherer Markdown-Renderer für die Notiz-Vorschau.
+// Erst wird alles HTML-escaped, dann werden Markdown-Muster ersetzt.
+function renderMarkdown(md) {
+  md = md.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, ""); // Frontmatter weg
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const bloecke = [];
+  md = md.replace(/```[\w-]*\r?\n([\s\S]*?)```/g, (_, c) => {
+    bloecke.push(c);
+    return `\u0000B${bloecke.length - 1}\u0000`;
+  });
+
+  const inline = (t) => {
+    t = esc(t);
+    t = t.replace(/`([^`]+)`/g, (_, c) => `<code>${c}</code>`);
+    t = t.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, ziel, alias) =>
+      `<span class="wikilink" data-ziel="${ziel.trim().replace(/"/g, "&quot;")}">${alias || ziel}</span>`);
+    t = t.replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, `<a href="$2" target="_blank" rel="noopener">$1</a>`);
+    t = t.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+    t = t.replace(/(^|[\s(])\*([^*\s][^*]*)\*(?=[\s).,;:!?]|$)/g, "$1<i>$2</i>");
+    return t;
+  };
+
+  let html = "", absatz = [], liste = null, tabelle = null, zitat = [];
+  const flush = () => {
+    if (absatz.length) { html += `<p>${absatz.map(inline).join("<br>")}</p>`; absatz = []; }
+    if (liste) { html += `<${liste.art}>${liste.punkte.map((p) => `<li>${inline(p)}</li>`).join("")}</${liste.art}>`; liste = null; }
+    if (zitat.length) { html += `<blockquote>${zitat.map(inline).join("<br>")}</blockquote>`; zitat = []; }
+    if (tabelle) {
+      html += "<table>" + tabelle.map((zeile, i) =>
+        "<tr>" + zeile.map((z) => `<${i ? "td" : "th"}>${inline(z)}</${i ? "td" : "th"}>`).join("") + "</tr>"
+      ).join("") + "</table>";
+      tabelle = null;
+    }
+  };
+
+  for (const roh of md.split(/\r?\n/)) {
+    const zeile = roh.replace(/\s+$/, "");
+    let m;
+    if ((m = zeile.match(/^\u0000B(\d+)\u0000$/))) { flush(); html += `<pre><code>${esc(bloecke[+m[1]])}</code></pre>`; continue; }
+    if (!zeile.trim()) { flush(); continue; }
+    if ((m = zeile.match(/^(#{1,6})\s+(.*)$/))) { flush(); const h = Math.min(3, m[1].length); html += `<h${h}>${inline(m[2])}</h${h}>`; continue; }
+    if (/^(-{3,}|\*{3,})$/.test(zeile.trim())) { flush(); html += "<hr>"; continue; }
+    if ((m = zeile.match(/^>\s?(.*)$/))) { if (absatz.length || liste || tabelle) flush(); zitat.push(m[1]); continue; }
+    if ((m = zeile.match(/^\s*[-*+]\s+\[([ xX])\]\s+(.*)$/))) {
+      if (!liste || liste.art !== "ul") { flush(); liste = { art: "ul", punkte: [] }; }
+      liste.punkte.push(`${m[1].trim() ? "☑" : "☐"} ${m[2]}`);
+      continue;
+    }
+    if ((m = zeile.match(/^\s*[-*+]\s+(.*)$/))) {
+      if (!liste || liste.art !== "ul") { flush(); liste = { art: "ul", punkte: [] }; }
+      liste.punkte.push(m[1]);
+      continue;
+    }
+    if ((m = zeile.match(/^\s*\d+\.\s+(.*)$/))) {
+      if (!liste || liste.art !== "ol") { flush(); liste = { art: "ol", punkte: [] }; }
+      liste.punkte.push(m[1]);
+      continue;
+    }
+    if (/^\|.*\|$/.test(zeile.trim())) {
+      const zellen = zeile.trim().slice(1, -1).split("|").map((z) => z.trim());
+      if (zellen.every((z) => /^[-: ]+$/.test(z))) continue; // Trennzeile
+      if (!tabelle) { flush(); tabelle = []; }
+      tabelle.push(zellen);
+      continue;
+    }
+    if (liste || tabelle || zitat.length) flush();
+    absatz.push(zeile);
+  }
+  flush();
+  return html;
+}
+
+let vorschauPfad = null;
+async function ladeVorschau(pfad) {
+  vorschauPfad = pfad;
+  const el = document.getElementById("panel-inhalt");
+  el.classList.remove("hidden");
+  el.innerHTML = `<span style="color:var(--text-dim)">lade …</span>`;
+  try {
+    const res = await (await fetch(`/api/notiz?pfad=${encodeURIComponent(pfad)}`)).json();
+    if (vorschauPfad !== pfad) return; // inzwischen andere Notiz gewählt
+    if (res.fehler) { el.innerHTML = `<span style="color:var(--text-dim)">${res.fehler}</span>`; return; }
+    el.innerHTML = renderMarkdown(res.inhalt);
+    // Wikilinks klickbar machen: Ziel über den Dateinamen auflösen
+    const basis = new Map(nodes.map((n) => [n.id.split("/").pop().replace(/\.md$/i, "").toLowerCase(), n.id]));
+    el.querySelectorAll(".wikilink").forEach((w) => {
+      const ziel = (w.dataset.ziel || "").split("/").pop().replace(/\.md$/i, "").toLowerCase();
+      const id = basis.get(ziel);
+      if (id) w.onclick = () => fokusAufNotiz(id);
+      else w.classList.add("tot");
+    });
+  } catch {
+    if (vorschauPfad === pfad) el.innerHTML = "";
+  }
+}
+
 function updatePanel() {
   const panel = document.getElementById("panel");
   if (!selected) { panel.classList.add("hidden"); return; }
@@ -759,7 +855,9 @@ function updatePanel() {
 
   const nb = document.getElementById("panel-neighbors");
   nb.innerHTML = "";
-  const linked = neighborsOf(selected.id);
+  // Gegenseitige Links erzeugen zwei Kanten — Nachbarn deshalb deduplizieren
+  const gesehen = new Set();
+  const linked = neighborsOf(selected.id).filter((n) => !gesehen.has(n.id) && gesehen.add(n.id));
   if (linked.length) {
     const h = document.createElement("h3");
     h.textContent = "Verknüpft mit";
@@ -779,6 +877,8 @@ function updatePanel() {
 
   document.getElementById("panel-open").href =
     `obsidian://open?vault=${encodeURIComponent(graph.meta.vaultName)}&file=${encodeURIComponent(selected.id.replace(/\.md$/, ""))}`;
+
+  ladeVorschau(selected.id);
 }
 
 document.getElementById("panel-close").onclick = () => { selected = null; updatePanel(); draw(); };

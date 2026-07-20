@@ -308,3 +308,40 @@ html, body {
 }
 #panel-neighbors a:hover { color: var(--accent); }
 #panel-open { display: inline-block; }
+
+/* Notiz-Vorschau (gerendertes Markdown) */
+#panel-inhalt {
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.10);
+  font-size: 13px; line-height: 1.6; word-break: break-word;
+}
+#panel-inhalt.hidden { display: none; }
+#panel-inhalt h1, #panel-inhalt h2, #panel-inhalt h3 {
+  font-size: 14px; margin: 12px 0 6px; color: #fff;
+}
+#panel-inhalt h1 { font-size: 15px; }
+#panel-inhalt p { margin: 6px 0; }
+#panel-inhalt ul, #panel-inhalt ol { margin: 6px 0 6px 18px; }
+#panel-inhalt li { margin: 2px 0; }
+#panel-inhalt code {
+  background: rgba(255, 255, 255, 0.07); border-radius: 4px;
+  padding: 1px 5px; font-size: 12px;
+}
+#panel-inhalt pre {
+  background: rgba(255, 255, 255, 0.05); border-radius: 8px;
+  padding: 10px; overflow-x: auto; margin: 8px 0;
+}
+#panel-inhalt pre code { background: none; padding: 0; }
+#panel-inhalt blockquote {
+  border-left: 3px solid var(--accent); padding-left: 10px;
+  color: var(--text-dim); margin: 8px 0;
+}
+#panel-inhalt a { color: var(--accent); text-decoration: none; }
+#panel-inhalt a:hover { text-decoration: underline; }
+#panel-inhalt .wikilink { cursor: pointer; color: var(--accent); }
+#panel-inhalt .wikilink.tot { color: var(--text-dim); cursor: default; }
+#panel-inhalt hr { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 10px 0; }
+#panel-inhalt table { border-collapse: collapse; margin: 8px 0; font-size: 12px; }
+#panel-inhalt th, #panel-inhalt td {
+  border: 1px solid rgba(255, 255, 255, 0.12); padding: 4px 8px; text-align: left;
+}
