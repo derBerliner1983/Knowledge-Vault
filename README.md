@@ -123,8 +123,17 @@ aktualisiert sich von selbst nach wenigen Sekunden — kein Knopfdruck nötig.
 
 Diesen Ordner in Obsidian als Vault öffnen („Ordner als Vault öffnen").
 Wichtig: **Sortiert wird nicht von Hand**, sondern über das System —
-Neues in `00 Inbox` ablegen und regelmäßig den Sortier-Prompt aus
-`08 Vorlagen/Prompt-Vorlagen für Claude Code.md` in Claude Code ausführen.
+Neues in `00 Inbox` ablegen; der Automat macht Vorschläge, die du im
+⚙-Posteingang abnickst.
+
+**Graph direkt in Obsidian (Plugin):** Der Vault bringt ein fertiges
+Plugin mit (`.obsidian/plugins/zweites-gehirn/`). Einmalig aktivieren:
+Obsidian-Einstellungen → **Community-Plugins** → „Eingeschränkten Modus
+deaktivieren" → **„Zweites Gehirn"** einschalten. Danach öffnet das
+🧠-Symbol in der linken Leiste (oder der Befehl „Graph-Ansicht öffnen")
+die komplette Ansicht — Graph, Suche, ⚙-Automat — als Tab in Obsidian.
+Voraussetzung: der Server läuft (`Installieren-und-Starten.bat` bzw.
+`npm start`); die Adresse ist in den Plugin-Einstellungen änderbar.
 
 ## Die Bausteine
 

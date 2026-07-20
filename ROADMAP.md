@@ -27,16 +27,21 @@ Wahrheit, die KI schlägt vor, der Mensch entscheidet.
 | Auto-Backup | Regelvorlage „Tägliche Sicherung (git)": abends git-Commit, nur bei Änderungen (standardmäßig aus) |
 | Vorschläge-Posteingang | Automat-Vorschläge einzeln im ⚙-Tab mit geplanten Schritten, „✓ Übernehmen" (rückgängig machbar) / „✕ Ablehnen", Zähler am Knopf |
 | Update-Funktion | ⚙-Tab prüft gegen git/GitHub, zeigt Neuerungen, installiert per Klick (ff-only, mit Neustart-Hinweis); täglicher Check → Posteingang |
+| Obsidian-Plugin | Liegt im Vault (`.obsidian/plugins/zweites-gehirn/`): Graph-Ansicht als Tab in Obsidian, Ribbon-Icon 🧠, Befehl, einstellbare Server-Adresse |
 
 ## 📋 Backlog
 
 *(leer — alles Besprochene ist gebaut)*
 
+## 🔨 In Arbeit (beauftragt)
+
+1. ~~Obsidian-Plugin~~ ✅
+2. Chat mit dem lokalen LLM in der GUI (mit Suchleiter-Kontext und Quellenangaben)
+3. Zugriff von unterwegs — VPN-Anleitung (WireGuard/Tailscale) im README
+
 ## 💡 Ideen (bewusst zurückgestellt)
 
-- Obsidian-Plugin (der `obsidian://`-Knopf deckt das Öffnen bereits ab)
-- Chat-Verlauf mit dem lokalen LLM (dafür ist Claude Code im Vault besser)
-- Cloud-/Mehrbenutzer-Funktionen
+- Cloud-/Mehrbenutzer-Funktionen mit eigenem Login (VPN-Weg ist sicherer)
 
 ---
 
