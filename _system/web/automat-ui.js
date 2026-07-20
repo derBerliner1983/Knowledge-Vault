@@ -41,9 +41,86 @@
     fuelleLLMFormular();
     zeichneRegeln();
     ladeLLMStatus();
+    ladeVorschlaege();
     ladeUndoListe();
     ladeLog();
   }
+
+  // --- Vorschläge-Posteingang -------------------------------------------------
+
+  function aktionText(a) {
+    return a.tu === "verschieben" ? `verschieben: ${a.von} → ${a.nach}` :
+      a.tu === "tags" ? `Tags für ${a.datei}: ${(a.tags || []).join(", ")}` :
+      a.tu === "anhaengen" ? `anhängen an ${a.datei}` :
+      a.tu === "neue-notiz" ? `neue Notiz: ${a.datei}` : JSON.stringify(a);
+  }
+
+  async function ladeVorschlaege() {
+    const el = document.getElementById("vorschlaege");
+    try {
+      const d = await (await fetch("/api/vorschlaege")).json();
+      const liste = (d.vorschlaege || []).slice().reverse();
+      const btn = document.getElementById("automat-btn");
+      btn.textContent = liste.length ? `⚙ Automat (${liste.length})` : "⚙ Automat";
+      el.innerHTML = "";
+      if (!liste.length) {
+        el.textContent = "— keine offenen Vorschläge —";
+        el.className = "dim";
+        return;
+      }
+      el.className = "";
+      for (const v of liste) {
+        const karte = document.createElement("div");
+        karte.className = "vorschlag";
+        const kopf = document.createElement("div");
+        kopf.innerHTML = `<b>${(v.datei || v.regel).replace(/&/g, "&amp;").replace(/</g, "&lt;")}</b> ` +
+          `<span class="dim">${v.zeit} · Regel „${v.regel}"</span>`;
+        const text = document.createElement("div");
+        text.className = "vorschlag-text";
+        text.textContent = v.text || "";
+        karte.append(kopf, text);
+        if (v.aktionen && v.aktionen.length) {
+          const ul = document.createElement("ul");
+          for (const a of v.aktionen) {
+            const li = document.createElement("li");
+            li.textContent = aktionText(a);
+            ul.append(li);
+          }
+          karte.append(ul);
+        }
+        const reihe = document.createElement("div");
+        reihe.className = "reihe";
+        const antwortAuf = async (tun, knopf) => {
+          knopf.disabled = true; knopf.textContent = "…";
+          try {
+            const res = await (await fetch("/api/vorschlaege", {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id: v.id, tun }),
+            })).json();
+            if (res.protokoll) document.getElementById("automat-log").textContent = res.protokoll.join("\n");
+            if (res.fehler) document.getElementById("automat-log").textContent = "✗ " + res.fehler;
+          } finally { ladeVorschlaege(); ladeUndoListe(); ladeLog(); }
+        };
+        if (v.aktionen && v.aktionen.length) {
+          const ok = document.createElement("button");
+          ok.className = "primaer";
+          ok.textContent = "✓ Übernehmen";
+          ok.onclick = () => antwortAuf("uebernehmen", ok);
+          reihe.append(ok);
+        }
+        const weg = document.createElement("button");
+        weg.textContent = "✕ Ablehnen";
+        weg.onclick = () => antwortAuf("ablehnen", weg);
+        reihe.append(weg);
+        karte.append(reihe);
+        el.append(karte);
+      }
+    } catch (err) { el.textContent = err.message; }
+  }
+
+  // Zähler am ⚙-Knopf auch ohne geöffneten Tab aktuell halten
+  ladeVorschlaege();
+  setInterval(() => { if (overlay.classList.contains("hidden")) ladeVorschlaege(); }, 30000);
 
   // --- Aufräum-Bericht --------------------------------------------------------
 

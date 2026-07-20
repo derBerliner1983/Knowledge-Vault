@@ -25,11 +25,11 @@ Wahrheit, die KI schlägt vor, der Mensch entscheidet.
 | Wiki-Ingest | `05 Quellen` + Regelvorlage: neue Quelle → Wiki-Seiten-Entwurf nach `_SCHEMA.md` samt Log-Eintrag (Regel standardmäßig aus, im ⚙-Tab aktivierbar) |
 | Heimnetz-Zugriff | GUI-Schalter „Im Heimnetz erreichbar" — gilt sofort ohne Neustart, LAN-Adresse fürs Handy wird angezeigt |
 | Auto-Backup | Regelvorlage „Tägliche Sicherung (git)": abends git-Commit, nur bei Änderungen (standardmäßig aus) |
+| Vorschläge-Posteingang | Automat-Vorschläge einzeln im ⚙-Tab mit geplanten Schritten, „✓ Übernehmen" (rückgängig machbar) / „✕ Ablehnen", Zähler am Knopf |
 
-## 📋 Backlog (besprochen, noch nicht beauftragt)
+## 📋 Backlog
 
-- **Vorschläge-Posteingang** — Automat-Vorschläge einzeln in der GUI mit
-  „Übernehmen / Ablehnen"-Knöpfen statt nur als Markdown-Datei.
+*(leer — alles Besprochene ist gebaut)*
 
 ## 💡 Ideen (bewusst zurückgestellt)
 

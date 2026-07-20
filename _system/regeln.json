@@ -19,7 +19,7 @@
         "ordner": "00 Inbox"
       },
       "aktion": "llm",
-      "prompt": "Du bist der Bibliothekar meines Obsidian-Vaults. Lies die folgende neue Notiz aus der Inbox und antworte kurz auf Deutsch:\n1) Drei bis fünf passende Tags (kommagetrennt)\n2) Ziel-Ordner-Vorschlag: 01 Daily Notes, 02 Projekte, 03 Wissen, 04 Personen oder 99 Archiv\n3) Eine Ein-Satz-Zusammenfassung\nVerschiebe nichts selbst — du machst nur einen Vorschlag.",
+      "prompt": "Du bist der Bibliothekar meines Obsidian-Vaults. Lies die folgende neue Notiz aus der Inbox. Antworte AUSSCHLIESSLICH mit einem JSON-Objekt in genau dieser Form: {\"zusammenfassung\": \"ein Satz\", \"tags\": [\"tag1\", \"tag2\", \"tag3\"], \"zielordner\": \"03 Wissen\"} — zielordner muss genau einer dieser Ordner sein: 01 Daily Notes, 02 Projekte, 03 Wissen, 04 Personen, 05 Quellen, 99 Archiv. Verschoben wird erst nach menschlicher Freigabe im Posteingang.",
       "ergebnis": "vorschlag"
     },
     {
@@ -67,5 +67,5 @@
       "ergebnis": "anhang"
     }
   ],
-  "_ergebnis_arten": "vorschlag = Antwort landet in '00 Inbox/_Automat-Vorschläge.md' (Standard, ändert keine Notiz) · anhang = Antwort wird unten an die Notiz angehängt · tags = kommagetrennte Tags aus der Antwort werden ins Frontmatter der Notiz gemischt"
+  "_ergebnis_arten": "vorschlag = landet im Posteingang des ⚙-Tabs, Übernehmen/Ablehnen per Klick (Standard, ändert keine Notiz) · anhang = Antwort wird unten an die Notiz angehängt · tags = Tags aus der Antwort ins Frontmatter · aktionen = Aktionsplan der Antwort wird direkt ausgeführt (rückgängig machbar)"
 }

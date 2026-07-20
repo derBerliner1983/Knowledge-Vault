@@ -1,7 +1,7 @@
 {
   "meta": {
     "vaultName": "Knowledge-Vault",
-    "generatedAt": "2026-07-20T07:50:53.217Z",
+    "generatedAt": "2026-07-20T07:55:06.002Z",
     "notes": 18,
     "edges": 17
   },
@@ -197,7 +197,7 @@
       "title": "Knowledge-Vault — Second Brain mit Claude Code",
       "cluster": "Wurzel",
       "tags": [],
-      "words": 1558,
+      "words": 1626,
       "links": 0
     },
     {
@@ -205,7 +205,7 @@
       "title": "Roadmap — Knowledge-Vault / Zweites Gehirn",
       "cluster": "Wurzel",
       "tags": [],
-      "words": 430,
+      "words": 418,
       "links": 0
     },
     {

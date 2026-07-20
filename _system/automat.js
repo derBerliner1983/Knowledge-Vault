@@ -31,7 +31,6 @@ const CONFIG_PATH = path.join(__dirname, "regeln.json");
 const CONFIG_LOKAL = path.join(__dirname, "regeln.lokal.json");
 const STATE_PATH = path.join(__dirname, ".automat-state.json");
 const LOG_PATH = path.join(__dirname, "automat-log.md");
-const VORSCHLAEGE = path.join(VAULT_ROOT, "00 Inbox", "_Automat-Vorschläge.md");
 const MAX_INHALT = 8000; // Zeichen pro Notiz ans LLM
 
 // --- Crontab-Parser (Minute Stunde Monatstag Monat Wochentag) ----------------
@@ -186,15 +185,62 @@ async function frageLLM(cfg, prompt) {
 
 // --- Ergebnis-Verarbeitung ---------------------------------------------------
 
+/**
+ * Vorschläge landen strukturiert in .vorschlaege.json und werden im ⚙-Tab
+ * als Posteingang angezeigt (Übernehmen / Ablehnen). Wenn die LLM-Antwort
+ * auswertbar ist, wird gleich ein fertiger Aktionsplan mitgespeichert —
+ * „Übernehmen" führt dann deterministisch aus (und ist rückgängig machbar).
+ */
+const VORSCHLAEGE_PATH = path.join(__dirname, ".vorschlaege.json");
+
+const ladeVorschlaege = () => loadJson(VORSCHLAEGE_PATH, []);
+function speichereVorschlaege(liste) {
+  fs.writeFileSync(VORSCHLAEGE_PATH, JSON.stringify(liste.slice(-100), null, 2));
+}
+function entferneVorschlag(id) {
+  const liste = ladeVorschlaege();
+  const v = liste.find((x) => x.id === id);
+  speichereVorschlaege(liste.filter((x) => x.id !== id));
+  return v || null;
+}
+
 function schreibeVorschlag(regel, relPath, antwort) {
-  if (!fs.existsSync(VORSCHLAEGE)) {
-    fs.writeFileSync(VORSCHLAEGE,
-      "---\ntags: [meta, automat]\n---\n\n# Automat-Vorschläge\n\n" +
-      "Vorschläge des Automaten (Regeln: `_system/regeln.json`). " +
-      "Du entscheidest — erledigte Abschnitte einfach löschen.\n");
-  }
-  fs.appendFileSync(VORSCHLAEGE,
-    `\n## ${stamp()} — ${relPath || regel.name}\n\n> Regel „${regel.name}"\n\n${antwort}\n`);
+  let text = antwort;
+  let aktionen = null;
+  try {
+    const j = parseAktionsplan(antwort);
+    if (Array.isArray(j.aktionen) && j.aktionen.length) {
+      aktionen = j.aktionen;
+      text = j.begruendung || j.zusammenfassung || text;
+    } else if (j.zielordner || j.tags) {
+      // Kurzform der Inbox-Regel: {zusammenfassung, tags, zielordner}
+      text = j.zusammenfassung || text;
+      aktionen = [];
+      if (relPath && j.zielordner && typeof j.zielordner === "string") {
+        const ordner = j.zielordner.replace(/[\\/]+$/, "");
+        const zielRel = ordner + "/" + path.basename(relPath);
+        if (fs.existsSync(path.join(VAULT_ROOT, ordner)) && zielRel !== relPath) {
+          aktionen.push({ tu: "verschieben", von: relPath, nach: zielRel });
+        }
+      }
+      if (relPath && Array.isArray(j.tags) && j.tags.length) {
+        const zielDatei = aktionen.length ? aktionen[0].nach : relPath;
+        aktionen.push({ tu: "tags", datei: zielDatei, tags: j.tags.slice(0, 8) });
+      }
+      if (!aktionen.length) aktionen = null;
+    }
+  } catch {} // keine JSON-Antwort — als Freitext-Vorschlag speichern
+
+  const liste = ladeVorschlaege();
+  liste.push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    zeit: stamp(),
+    regel: regel.name,
+    datei: relPath || null,
+    text: String(text).slice(0, 2000),
+    aktionen,
+  });
+  speichereVorschlaege(liste);
 }
 
 function haengeAn(fullPath, cfg, antwort) {
@@ -543,6 +589,7 @@ async function main() {
 module.exports = {
   frageLLM, listeModelle, aufloeseModell, auftrag, laufeRegel,
   fuehreAktionenAus, macheRueckgaengig, ladeUndo,
+  ladeVorschlaege, entferneVorschlag,
   cronMatches, ladeKonfig, CONFIG_LOKAL,
 };
 

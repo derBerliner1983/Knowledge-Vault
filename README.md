@@ -161,7 +161,7 @@ Eine Regel besteht aus:
 | `zeitplan` | Crontab, 5 Felder: `Minute Stunde Monatstag Monat Wochentag` — z. B. `*/15 * * * *` = alle 15 Minuten, `0 21 * * *` = täglich 21:00 |
 | `ausloeser` | optional: `{ "typ": "neue-datei", "ordner": "00 Inbox" }` — nur neue/geänderte Notizen dort werden verarbeitet (Dateien mit `_` am Anfang nie) |
 | `aktion` | `llm` (Notiz + Prompt ans Sprachmodell), `index` (Indexer laufen lassen), `befehl` (beliebiger Shell-Befehl, z. B. `qmd embed`) |
-| `ergebnis` | für `llm`: `vorschlag` (Standard — Antwort landet in `00 Inbox/_Automat-Vorschläge.md`, keine Notiz wird geändert), `anhang` (Antwort unten an die Notiz), `tags` (Tags ins Frontmatter) |
+| `ergebnis` | für `llm`: `vorschlag` (Standard — landet im **Posteingang** des ⚙-Tabs, keine Notiz wird geändert), `anhang` (Antwort unten an die Notiz), `tags` (Tags ins Frontmatter), `aktionen` (Aktionsplan direkt ausführen, rückgängig machbar) |
 
 **Lokales LLM statt Claude:** In `regeln.json` unter `llm` einstellbar:
 
@@ -195,9 +195,10 @@ anspruchsvolle Quellen (Widerspruchs-Abgleich über den Bestand) bleibt
 der Ingest-Prompt für Claude Code die bessere Wahl.
 
 Grundsatz bleibt: **Die KI schlägt vor, du entscheidest.** Der Standard-Modus
-`vorschlag` verschiebt und ändert nichts — Vorschläge liest du in Obsidian
-unter `00 Inbox/_Automat-Vorschläge.md` und setzt sie selbst um (oder lässt
-sie Claude Code umsetzen). Statt `npm run automat` kannst du auch den
+`vorschlag` verschiebt und ändert nichts — jeder Vorschlag erscheint im
+**Posteingang** des ⚙-Tabs (Zähler am Knopf) mit den geplanten Schritten:
+**„✓ Übernehmen"** führt sie aus (rückgängig machbar über den Verlauf),
+**„✕ Ablehnen"** verwirft sie. Statt `npm run automat` kannst du auch den
 OS-eigenen Scheduler nutzen — Eintrag z. B.:
 `*/15 * * * * cd /Pfad/zu/Knowledge-Vault && node _system/automat.js --einmal`
 (Windows: Aufgabenplanung mit demselben Befehl).

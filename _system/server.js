@@ -414,6 +414,31 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Vorschläge-Posteingang: lesen, übernehmen, ablehnen
+  if (url.pathname === "/api/vorschlaege" && req.method === "GET") {
+    try { antworte(res, 200, { vorschlaege: automat.ladeVorschlaege() }); }
+    catch (err) { antworte(res, 500, { fehler: err.message }); }
+    return;
+  }
+  if (url.pathname === "/api/vorschlaege" && req.method === "POST") {
+    try {
+      const { id, tun } = await leseBody(req);
+      const alle = automat.ladeVorschlaege();
+      const v = alle.find((x) => x.id === id);
+      if (!v) { antworte(res, 404, { fehler: "Vorschlag nicht gefunden." }); return; }
+      if (tun === "uebernehmen") {
+        if (!v.aktionen || !v.aktionen.length) { antworte(res, 400, { fehler: "Dieser Vorschlag hat keine ausführbaren Aktionen." }); return; }
+        const protokoll = automat.fuehreAktionenAus(v.aktionen, `Vorschlag: ${v.datei || v.regel}`);
+        automat.entferneVorschlag(id);
+        antworte(res, 200, { protokoll });
+      } else {
+        automat.entferneVorschlag(id);
+        antworte(res, 200, { ok: true });
+      }
+    } catch (err) { antworte(res, 500, { fehler: err.message }); }
+    return;
+  }
+
   // Undo-Verlauf lesen / rückgängig machen
   if (url.pathname === "/api/undo" && req.method === "GET") {
     try {
