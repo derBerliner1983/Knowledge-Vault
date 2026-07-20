@@ -8,6 +8,12 @@ Claude ist der Bibliothekar, die Graph-Ansicht ist nur das Fenster.
 
 ## Installation (einmalig)
 
+> **Hinweis Branch:** Das System liegt derzeit auf dem Branch
+> `claude/obsidian-system-setup-design-dpzavx`. Beim ZIP-Download auf
+> GitHub also zuerst oben diesen Branch auswählen, bei git:
+> `git clone` und dann `git checkout claude/obsidian-system-setup-design-dpzavx`.
+> (Entfällt, sobald der Branch nach `main` gemergt ist.)
+
 ### Windows 11 — ein Doppelklick
 
 1. Repo holen: auf GitHub **„Code → Download ZIP"**, entpacken (oder `git clone`).
@@ -36,8 +42,8 @@ npm run index     # Vault einlesen → _system/graph.json + INDEX.md-Bestand
 Ohne git geht auch: auf GitHub „Code → Download ZIP", entpacken, im
 entpackten Ordner ein Terminal öffnen.
 
-Keine weiteren Abhängigkeiten — die Graph-Bibliothek (d3) liegt lokal unter
-`_system/web/vendor/`, es wird nichts aus dem Netz geladen.
+Keine weiteren Abhängigkeiten — alle Bibliotheken (d3, QR-Code) liegen
+lokal unter `_system/web/vendor/`, es wird nichts aus dem Netz geladen.
 
 ## Starten (Graph-Ansicht auf einem Port)
 
@@ -142,8 +148,13 @@ Voraussetzung: der Server läuft (`Installieren-und-Starten.bat` bzw.
 | Katalog | `INDEX.md` | Eine Zeile pro Bereich; Bestand wird von `npm run index` gepflegt |
 | Regelwerk | `CLAUDE.md` | Brain-First-Suchleiter + Ordnungs-Regeln für Claude Code |
 | Wiki | `09 Wiki/` | KI-gepflegtes, verdichtetes Wissen (`_SCHEMA.md`, `log.md`) |
-| Indexer | `_system/indexer.js` | Deterministisch, ohne KI: Titel, Links, Tags → `graph.json` |
-| Ansicht | `_system/server.js` + `_system/web/` | Lokaler Server, Port 7777 |
+| Quellen | `05 Quellen/` | Rohquellen fürs Wiki + importierte Claude-Chats — unantastbar |
+| Konnektoren | `07 Konnektoren/` + `_system/connectoren.json` | Externe Dienste: Erkennung, Übersichtsseiten, Bilder |
+| Indexer | `_system/indexer.js` | Deterministisch, ohne KI: Titel, Links, Tags, Verweise → `graph.json` |
+| Ansicht | `_system/server.js` + `_system/web/` | Lokaler Server (Port 7777): Graph, Suche, Chat, ⚙-Tab |
+| Automat | `_system/automat.js` + `_system/regeln.json` | Crontab-Regeln, LLM-Aufträge, Aktionspläne, Undo |
+| Sicherheit | `_system/sicherheit.js` | Anmeldung, MFA (TOTP), Geräte-Sessions |
+| Obsidian-Plugin | `.obsidian/plugins/zweites-gehirn/` | Die Ansicht als Tab direkt in Obsidian |
 
 ## Der Automat — Crontabs, Regeln und lokales LLM (optional)
 
@@ -306,9 +317,10 @@ klassischsten:
 3. **Anderer Router / eigener Server**: WireGuard-Server im Heimnetz
    (z. B. Raspberry Pi) plus DynDNS.
 
-**Wichtig:** Den Server niemals per Portfreigabe direkt ins Internet
-stellen — er hat bewusst kein Login. VPN ist der richtige Weg: verschlüsselt,
-nur deine eigenen Geräte, und am System muss nichts geändert werden.
+**Wichtig:** Den Server auch mit aktivierter Anmeldung + MFA nicht per
+Portfreigabe direkt ins Internet stellen — VPN ist der richtige Weg:
+verschlüsselt, nur deine eigenen Geräte, keine Angriffsfläche. Die
+Anmeldung ist die zweite Verteidigungslinie, nicht die erste.
 
 ## Zwei PCs, ein Gehirn — Vault-Sync
 
