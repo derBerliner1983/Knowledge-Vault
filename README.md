@@ -177,6 +177,14 @@ Eine Regel besteht aus:
 Neben dem Zeitplan geht alles auch **manuell**: im ⚙-Automat-Tab der
 Web-Ansicht — Regel per Knopf starten oder freien Auftrag eintippen.
 
+**Auto-Backup:** Die mitgelieferte Regel **„Tägliche Sicherung (git)"**
+(im ⚙-Tab aktivieren) sichert den ganzen Vault jeden Abend um 23:00 als
+git-Commit — nur wenn sich etwas geändert hat. Empfohlen, bevor du
+Regeln mit „Aktionsplan direkt ausführen" scharf schaltest. Soll auch zu
+GitHub hochgeladen werden, ergänze im Befehl ` && git push`. Ohne git:
+Befehl z. B. durch einen ZIP-Aufruf ersetzen
+(Windows: `tar -a -c -f Backup.zip *.md "0*" "9*"`).
+
 **Wiki-Ingest:** Rohquellen (Artikel, Transkripte, Exzerpte) kommen nach
 `05 Quellen`. Die mitgelieferte Regel **„Quelle ins Wiki einarbeiten
 (Entwurf)"** (im ⚙-Tab per Haken aktivieren) lässt das LLM für jede neue

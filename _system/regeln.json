@@ -29,6 +29,13 @@
       "aktion": "index"
     },
     {
+      "name": "Tägliche Sicherung (git)",
+      "aktiv": false,
+      "zeitplan": "0 23 * * *",
+      "aktion": "befehl",
+      "befehl": "git add -A && (git diff --cached --quiet || git commit -m \"Auto-Backup\")"
+    },
+    {
       "name": "qmd-Suchindex nachts aktualisieren",
       "aktiv": false,
       "zeitplan": "30 3 * * *",

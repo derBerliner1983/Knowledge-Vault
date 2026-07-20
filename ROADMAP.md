@@ -24,13 +24,12 @@ Wahrheit, die KI schlägt vor, der Mensch entscheidet.
 | Aufräum-Bericht | Ohne LLM, per Knopf: kaputte Wikilinks, verwaiste Notizen, Duplikat-Verdacht, Notizen ohne Tags, Inbox-Altbestand — Klick springt zur Notiz |
 | Wiki-Ingest | `05 Quellen` + Regelvorlage: neue Quelle → Wiki-Seiten-Entwurf nach `_SCHEMA.md` samt Log-Eintrag (Regel standardmäßig aus, im ⚙-Tab aktivierbar) |
 | Heimnetz-Zugriff | GUI-Schalter „Im Heimnetz erreichbar" — gilt sofort ohne Neustart, LAN-Adresse fürs Handy wird angezeigt |
+| Auto-Backup | Regelvorlage „Tägliche Sicherung (git)": abends git-Commit, nur bei Änderungen (standardmäßig aus) |
 
 ## 📋 Backlog (besprochen, noch nicht beauftragt)
 
 - **Vorschläge-Posteingang** — Automat-Vorschläge einzeln in der GUI mit
   „Übernehmen / Ablehnen"-Knöpfen statt nur als Markdown-Datei.
-- **Auto-Backup-Regel** — täglich `git commit` (oder ZIP), bevor Regeln
-  viel bewegen dürfen.
 
 ## 💡 Ideen (bewusst zurückgestellt)
 
