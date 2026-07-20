@@ -35,6 +35,8 @@
       rechner = cfg.rechner || "";
       document.getElementById("rechner-name").textContent = rechner || "?";
       document.getElementById("llm-lokal").checked = !!cfg.llmLokal;
+      document.getElementById("server-heimnetz").checked = !!(cfg.server && cfg.server.heimnetz);
+      document.getElementById("lan-adresse").textContent = cfg.lan || "keine Netzwerk-Adresse gefunden";
     } catch {}
     fuelleLLMFormular();
     zeichneRegeln();
@@ -196,6 +198,10 @@
     if (!urlFeld.value || Object.values(standard).includes(urlFeld.value)) {
       urlFeld.value = standard[ev.target.value] || "";
     }
+  };
+
+  document.getElementById("server-speichern").onclick = async () => {
+    await speichereConfig("server-meldung");
   };
 
   document.getElementById("llm-speichern").onclick = async () => {
@@ -383,6 +389,7 @@
           llm: llmCfg,
           regeln,
           llmLokal: document.getElementById("llm-lokal").checked,
+          server: { heimnetz: document.getElementById("server-heimnetz").checked },
         }),
       });
       const j = await res.json();

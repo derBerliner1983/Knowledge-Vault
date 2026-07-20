@@ -23,13 +23,12 @@ Wahrheit, die KI schlägt vor, der Mensch entscheidet.
 | Undo | Jeder ausgeführte Aktionsplan im Verlauf, per „↩ Rückgängig" umkehrbar; entfernte Notizen landen im Papierkorb statt gelöscht zu werden |
 | Aufräum-Bericht | Ohne LLM, per Knopf: kaputte Wikilinks, verwaiste Notizen, Duplikat-Verdacht, Notizen ohne Tags, Inbox-Altbestand — Klick springt zur Notiz |
 | Wiki-Ingest | `05 Quellen` + Regelvorlage: neue Quelle → Wiki-Seiten-Entwurf nach `_SCHEMA.md` samt Log-Eintrag (Regel standardmäßig aus, im ⚙-Tab aktivierbar) |
+| Heimnetz-Zugriff | GUI-Schalter „Im Heimnetz erreichbar" — gilt sofort ohne Neustart, LAN-Adresse fürs Handy wird angezeigt |
 
 ## 📋 Backlog (besprochen, noch nicht beauftragt)
 
 - **Vorschläge-Posteingang** — Automat-Vorschläge einzeln in der GUI mit
   „Übernehmen / Ablehnen"-Knöpfen statt nur als Markdown-Datei.
-- **Handy-Zugriff im Heimnetz** — Schalter für `HOST=0.0.0.0`, Ansicht vom
-  Handy/Tablet im WLAN erreichbar.
 - **Auto-Backup-Regel** — täglich `git commit` (oder ZIP), bevor Regeln
   viel bewegen dürfen.
 

@@ -155,7 +155,23 @@ function pruefeConfig(cfg) {
 
 const argPort = process.argv.indexOf("--port");
 const PORT = argPort !== -1 ? Number(process.argv[argPort + 1]) : Number(process.env.PORT || 7777);
-const HOST = process.env.HOST || "127.0.0.1";
+
+// Bind-Adresse: GUI-Schalter „Heimnetz" (regeln.json → server.heimnetz)
+// öffnet den Server fürs lokale Netz (Handy/Tablet); HOST-Env geht vor.
+function gewuenschterHost() {
+  if (process.env.HOST) return process.env.HOST;
+  try { return leseConfig().server && leseConfig().server.heimnetz ? "0.0.0.0" : "127.0.0.1"; }
+  catch { return "127.0.0.1"; }
+}
+
+function lanAdresse() {
+  for (const schnittstellen of Object.values(os.networkInterfaces())) {
+    for (const i of schnittstellen || []) {
+      if (i.family === "IPv4" && !i.internal) return i.address;
+    }
+  }
+  return null;
+}
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -267,6 +283,8 @@ const server = http.createServer(async (req, res) => {
         regeln: cfg.regeln || [],
         llmLokal: !!cfg._llmLokal,
         rechner: os.hostname(),
+        server: cfg.server || { heimnetz: false },
+        lan: lanAdresse() ? `http://${lanAdresse()}:${PORT}` : null,
       });
     } catch (err) { antworte(res, 500, { fehler: err.message }); }
     return;
@@ -284,6 +302,7 @@ const server = http.createServer(async (req, res) => {
       fs.writeFileSync(CONFIG_PATH + ".bak", JSON.stringify(geteilt, null, 2));
       const speichern = {
         llm: neu.llmLokal ? geteilt.llm : neu.llm,
+        server: { heimnetz: !!(neu.server && neu.server.heimnetz) },
         regeln: neu.regeln,
         _hilfe: geteilt._hilfe,
         _ergebnis_arten: geteilt._ergebnis_arten,
@@ -294,7 +313,8 @@ const server = http.createServer(async (req, res) => {
       } else if (fs.existsSync(automat.CONFIG_LOKAL)) {
         fs.unlinkSync(automat.CONFIG_LOKAL);
       }
-      antworte(res, 200, { ok: true });
+      antworte(res, 200, { ok: true, lan: lanAdresse() ? `http://${lanAdresse()}:${PORT}` : null });
+      setTimeout(bindeNeuFallsNoetig, 150);
     } catch (err) { antworte(res, 500, { fehler: err.message }); }
     return;
   }
@@ -460,12 +480,37 @@ async function automatTick() {
   automatLaeuft = false;
 }
 
-server.listen(PORT, HOST, () => {
+let aktuellerHost = gewuenschterHost();
+
+function meldeAdressen() {
+  console.log(`Second-Brain-Graph läuft: http://localhost:${PORT}`);
+  if (aktuellerHost === "0.0.0.0" && lanAdresse()) {
+    console.log(`Im Heimnetz erreichbar (Handy/Tablet): http://${lanAdresse()}:${PORT}`);
+  }
+}
+
+/** GUI-Schalter „Heimnetz" umgelegt? Dann ohne Neustart neu binden. */
+function bindeNeuFallsNoetig() {
+  const soll = gewuenschterHost();
+  if (soll === aktuellerHost) return;
+  aktuellerHost = soll;
+  if (server.closeAllConnections) server.closeAllConnections();
+  server.close(() => {
+    server.listen(PORT, aktuellerHost, () => {
+      console.log(soll === "0.0.0.0"
+        ? "Heimnetz-Zugriff EIN — Windows fragt ggf. einmal nach Firewall-Freigabe."
+        : "Heimnetz-Zugriff AUS — nur noch dieser Rechner.");
+      meldeAdressen();
+    });
+  });
+}
+
+server.listen(PORT, aktuellerHost, () => {
   reindex();
   starteUeberwachung();
   setInterval(automatTick, 20000);
   automatTick();
-  console.log(`Second-Brain-Graph läuft: http://localhost:${PORT}`);
+  meldeAdressen();
   console.log("Der Automat läuft mit: Crontab-Regeln aus _system/regeln.json werden jede Minute geprüft.");
   console.log("Beenden mit Strg+C. Neu indexieren: npm run index (oder Knopf in der Ansicht).");
 });

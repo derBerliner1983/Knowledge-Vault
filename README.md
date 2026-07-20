@@ -194,6 +194,15 @@ OS-eigenen Scheduler nutzen — Eintrag z. B.:
 `*/15 * * * * cd /Pfad/zu/Knowledge-Vault && node _system/automat.js --einmal`
 (Windows: Aufgabenplanung mit demselben Befehl).
 
+## Vom Handy oder Tablet aus (Heimnetz)
+
+Im ⚙-Tab unter **Server** den Haken **„Im Heimnetz erreichbar machen"**
+setzen und speichern — gilt sofort, ohne Neustart. Daneben steht die
+Adresse fürs Handy (z. B. `http://192.168.1.23:7777`); im selben WLAN
+öffnen, fertig. Windows fragt beim ersten Mal einmal nach der
+Firewall-Freigabe („Zulassen"). Haken raus = der Server ist wieder nur
+von diesem Rechner erreichbar.
+
 ## Zwei PCs, ein Gehirn — Vault-Sync
 
 Der Vault kann komplett gesynct werden (Syncthing, OneDrive, Obsidian Sync,

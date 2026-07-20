@@ -6,6 +6,9 @@
     "schluessel": "",
     "_hilfe": "anbieter: 'lmstudio' (Standard — LM Studio: Developer-Tab, Server starten; modell 'auto' nimmt das gerade im RAM geladene Modell), 'ollama' (url http://localhost:11434), 'openai' (jeder OpenAI-kompatible Server) oder 'claude-cli' (nutzt das installierte Claude Code). 'schluessel' nur falls der Server einen API-Key verlangt."
   },
+  "server": {
+    "heimnetz": false
+  },
   "regeln": [
     {
       "name": "Inbox-Eingang einordnen",

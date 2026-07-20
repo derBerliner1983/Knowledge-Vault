@@ -71,6 +71,19 @@
       </section>
 
       <section>
+        <h3>Server</h3>
+        <label class="zeile-checkbox">
+          <input type="checkbox" id="server-heimnetz">
+          <span>Im <b>Heimnetz</b> erreichbar machen (Handy/Tablet im WLAN).
+          Gilt nach dem Speichern sofort. Adresse: <b id="lan-adresse">—</b></span>
+        </label>
+        <div class="reihe">
+          <button id="server-speichern" class="primaer">Server-Einstellung speichern</button>
+          <span id="server-meldung" class="dim"></span>
+        </div>
+      </section>
+
+      <section>
         <h3>Auftrag an das LLM</h3>
         <textarea id="auftrag-text" rows="3"
           placeholder="z. B.: Leere die Inbox und sortiere die Notizen nach den Regeln in die passenden Ordner ein."></textarea>
