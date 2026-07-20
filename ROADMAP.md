@@ -31,9 +31,7 @@ Wahrheit, die KI schlägt vor, der Mensch entscheidet.
 | 💬 Chat | Gespräch mit dem Vault übers lokale LLM — Suchleiter-Kontext (INDEX + Top-3-Notizen), antwortet nur daraus, klickbare Quellenangaben |
 | Von unterwegs | VPN-Anleitung im README (Tailscale / Fritz!Box-WireGuard) — sicher, ohne Portfreigabe und ohne eigenes Login-System |
 | Anmeldung & MFA | Passwort + TOTP-Authenticator, Geräte-Sessions (180 Tage), neues Gerät = neue MFA, Geräte-Verwaltung im ⚙-Tab, Anmelde-Bremse |
-
 | Konnektoren | GUI-definierte Dienste (Name, Domain-Muster, Farbe, Bild), automatische Link-Erkennung, Punkte im Graph, Verweise im Panel, Übersichts-MD je Dienst unter `07 Konnektoren/`, Suche „claude" findet alle Verweise |
-
 | Chat-Import | Von dir geteilte Claude-Chats per Link (oder Einfügen) → `05 Quellen/Claude-Chats/`, automatisch am Claude-Konnektor |
 
 ## 📋 Backlog
