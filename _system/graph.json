@@ -1,7 +1,7 @@
 {
   "meta": {
     "vaultName": "Knowledge-Vault",
-    "generatedAt": "2026-07-20T18:00:42.072Z",
+    "generatedAt": "2026-07-20T18:03:14.828Z",
     "notes": 23,
     "edges": 23
   },
@@ -161,9 +161,9 @@
         "konnektor",
         "meta"
       ],
-      "words": 28,
+      "words": 35,
       "extern": [],
-      "links": 1
+      "links": 2
     },
     {
       "id": "07 Konnektoren/GitHub.md",
@@ -301,7 +301,7 @@
       "title": "Knowledge-Vault — Second Brain mit Claude Code",
       "cluster": "Wurzel",
       "tags": [],
-      "words": 2181,
+      "words": 2305,
       "extern": [
         {
           "url": "https://github.com/tobi/qmd",
@@ -316,7 +316,7 @@
       "title": "Roadmap — Knowledge-Vault / Zweites Gehirn",
       "cluster": "Wurzel",
       "tags": [],
-      "words": 555,
+      "words": 567,
       "extern": [],
       "links": 0
     },
@@ -426,7 +426,12 @@
       "target": "INDEX.md"
     }
   ],
-  "unaufgeloest": [],
+  "unaufgeloest": [
+    {
+      "von": "07 Konnektoren/Claude.md",
+      "ziel": "05 Quellen/Claude-Chats/2026-07-20 Claude-Chat abc123def456"
+    }
+  ],
   "connectoren": [
     {
       "id": "claude",

@@ -49,6 +49,39 @@
     ladeConnectoren();
   }
 
+  // --- Geteilten Claude-Chat importieren -------------------------------------------
+
+  async function chatImport(mitText) {
+    const meldung = document.getElementById("chatimport-meldung");
+    const urlFeld = document.getElementById("chatimport-url");
+    const fallback = document.getElementById("chatimport-fallback");
+    meldung.textContent = "importiere …"; meldung.className = "dim";
+    try {
+      const res = await (await fetch("/api/chat-import", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: urlFeld.value.trim() || undefined,
+          text: mitText ? document.getElementById("chatimport-text").value : undefined,
+        }),
+      })).json();
+      if (res.fallback) {
+        fallback.style.display = "";
+        meldung.textContent = res.hinweis;
+        return;
+      }
+      if (res.fehler) throw new Error(res.fehler);
+      fallback.style.display = "none";
+      document.getElementById("chatimport-text").value = "";
+      meldung.innerHTML = `<span class="gut">✓ Gespeichert: ${res.datei}</span>` +
+        (res.hinweis ? ` <span class="dim">${res.hinweis}</span>` : "");
+    } catch (err) {
+      meldung.textContent = "✗ " + err.message;
+      meldung.className = "schlecht";
+    }
+  }
+  document.getElementById("chatimport-los").onclick = () => chatImport(false);
+  document.getElementById("chatimport-text-los").onclick = () => chatImport(true);
+
   // --- Konnektoren ---------------------------------------------------------------
 
   let connectoren = [];

@@ -230,6 +230,14 @@ ein Bild-Upload). Ab dann gilt für jeden passenden Link automatisch:
 Beispiel: `03 Wissen/Konnektoren-Demo.md`. Claude, GitHub, YouTube und
 Wikipedia sind vordefiniert — beliebig erweiterbar, unbegrenzt.
 
+**Geteilte Claude-Chats importieren:** Chats werden grundsätzlich nie
+ausgelesen. Nur wenn du selbst einen Chat teilst (claude.ai → Teilen),
+kannst du den Link im ⚙-Tab importieren: Der Inhalt landet als Quelle
+unter `05 Quellen/Claude-Chats/` (mit Link im Kopf, dadurch automatisch
+am Claude-Konnektor). Liefert die geteilte Seite ihren Inhalt nur im
+Browser, bietet die GUI ein Einfügen-Feld an — kopieren, einfügen,
+gespeichert.
+
 ## Mit dem Gehirn reden (💬 Chat)
 
 Der Knopf **💬 Chat** (oben rechts) öffnet ein Gespräch mit deinem Vault

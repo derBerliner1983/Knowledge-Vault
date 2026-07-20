@@ -612,6 +612,65 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Geteilten Claude-Chat importieren → 05 Quellen/Claude-Chats/…
+  // Nur Links, die der Nutzer selbst geteilt hat. Wenn der Abruf keinen
+  // brauchbaren Text liefert (die Seite ist eine App), bietet die GUI das
+  // Einfügen des Chat-Texts an — der landet dann im selben Ablageort.
+  if (url.pathname === "/api/chat-import" && req.method === "POST") {
+    try {
+      const { url: chatUrl, text } = await leseBody(req);
+      let inhalt = String(text || "").trim();
+      let hinweis = null;
+
+      if (!inhalt && chatUrl) {
+        try {
+          const antwortWeb = await fetch(chatUrl, {
+            signal: AbortSignal.timeout(20000),
+            headers: { "User-Agent": "Mozilla/5.0 (ZweitesGehirn)" },
+          });
+          const html = await antwortWeb.text();
+          inhalt = html
+            .replace(/<script[\s\S]*?<\/script>/gi, "")
+            .replace(/<style[\s\S]*?<\/style>/gi, "")
+            .replace(/<[^>]+>/g, "\n")
+            .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+            .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+            .split("\n").map((z) => z.trim()).filter(Boolean).join("\n");
+          if (inhalt.length < 400) {
+            antworte(res, 200, {
+              fallback: true,
+              hinweis: "Die geteilte Seite liefert ihren Inhalt erst im Browser — bitte den Chat-Text markieren, kopieren und unten einfügen.",
+            });
+            return;
+          }
+          hinweis = "Automatisch abgerufen — bitte kurz prüfen, ob der Text vollständig ist.";
+        } catch (err) {
+          antworte(res, 200, { fallback: true, hinweis: `Abruf nicht möglich (${err.message}) — bitte den Chat-Text unten einfügen.` });
+          return;
+        }
+      }
+      if (!inhalt) { antworte(res, 400, { fehler: "Weder Link-Inhalt noch eingefügter Text vorhanden." }); return; }
+
+      const datum = new Date().toISOString().slice(0, 10);
+      const kennung = (String(chatUrl || "").match(/share\/([\w-]{4,})/) || [])[1] || Date.now().toString(36);
+      const ordner = path.join(VAULT_ROOT, "05 Quellen", "Claude-Chats");
+      fs.mkdirSync(ordner, { recursive: true });
+      let ziel = path.join(ordner, `${datum} Claude-Chat ${kennung.slice(0, 12)}.md`);
+      let i = 2;
+      while (fs.existsSync(ziel)) ziel = path.join(ordner, `${datum} Claude-Chat ${kennung.slice(0, 12)} (${i++}).md`);
+      const kopf = [
+        "---", "tags: [quelle, claude-chat]", `importiert: ${datum}`, "---", "",
+        `# Claude-Chat vom ${datum}`, "",
+        chatUrl ? `Geteilter Link: ${chatUrl}` : "Eingefügt ohne Link.", "", "---", "",
+      ].join("\n");
+      fs.writeFileSync(ziel, kopf + inhalt.slice(0, 400000) + "\n");
+      const rel = path.relative(VAULT_ROOT, ziel).replace(/\\/g, "/");
+      reindex();
+      antworte(res, 200, { ok: true, datei: rel, hinweis });
+    } catch (err) { antworte(res, 500, { fehler: err.message }); }
+    return;
+  }
+
   // Konnektoren: Definitionen lesen/speichern, Bild hochladen
   const CONN_PATH = path.join(__dirname, "connectoren.json");
   if (url.pathname === "/api/connectoren" && req.method === "GET") {

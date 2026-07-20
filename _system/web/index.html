@@ -130,6 +130,22 @@
       </section>
 
       <section>
+        <h3>Geteilten Claude-Chat importieren</h3>
+        <p class="dim" style="font-size:12px">Nur für Chats, die du selbst geteilt hast
+        (claude.ai → Teilen → Link kopieren). Der Chat wird als Quelle unter
+        <code>05 Quellen/Claude-Chats/</code> abgelegt und automatisch mit dem Claude-Konnektor verknüpft.</p>
+        <div class="reihe">
+          <input id="chatimport-url" type="text" placeholder="https://claude.ai/share/…">
+          <button id="chatimport-los" class="primaer">Importieren</button>
+        </div>
+        <div id="chatimport-fallback" style="display:none">
+          <textarea id="chatimport-text" rows="4" placeholder="Chat-Text hier einfügen (im Browser markieren und kopieren)"></textarea>
+          <div class="reihe"><button id="chatimport-text-los" class="primaer">Eingefügten Text speichern</button></div>
+        </div>
+        <div id="chatimport-meldung" class="dim"></div>
+      </section>
+
+      <section>
         <h3>Konnektoren (externe Dienste — Claude, GitHub, …)</h3>
         <p class="dim" style="font-size:12px">Jeder Link in deinen Notizen, dessen Adresse zu einem
         Muster passt, wird dem Konnektor zugeordnet: farbige Punkte im Graph, Verweise im Panel,
