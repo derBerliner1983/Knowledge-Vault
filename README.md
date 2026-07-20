@@ -243,6 +243,30 @@ Adresse fürs Handy (z. B. `http://192.168.1.23:7777`); im selben WLAN
 Firewall-Freigabe („Zulassen"). Haken raus = der Server ist wieder nur
 von diesem Rechner erreichbar.
 
+## Von unterwegs (VPN — die sichere Variante)
+
+Das System bleibt bewusst lokal: kein Cloud-Konto, kein offenes Internet.
+Wer von unterwegs an sein Gehirn will, holt sich per VPN einfach „sein
+Heimnetz in die Tasche" — dann funktioniert die normale Heimnetz-Adresse
+(siehe oben) auch mobil. Drei bewährte Wege, vom einfachsten zum
+klassischsten:
+
+1. **Tailscale** (am einfachsten): [tailscale.com](https://tailscale.com)
+   auf PC und Handy installieren, mit demselben Konto anmelden — fertig.
+   Der PC bekommt eine feste `100.x.x.x`-Adresse; im ⚙-Tab den
+   Heimnetz-Haken setzen und am Handy `http://100.x.x.x:7777` öffnen.
+   Kostenlos für den Privatgebrauch, keine Router-Konfiguration nötig.
+2. **WireGuard über die Fritz!Box**: Fritz!OS ab 7.50 kann WireGuard
+   eingebaut (Internet → Freigaben → VPN → WireGuard). Die erzeugte
+   Konfiguration mit der WireGuard-App am Handy scannen — unterwegs
+   VPN einschalten und die normale Heimnetz-Adresse öffnen.
+3. **Anderer Router / eigener Server**: WireGuard-Server im Heimnetz
+   (z. B. Raspberry Pi) plus DynDNS.
+
+**Wichtig:** Den Server niemals per Portfreigabe direkt ins Internet
+stellen — er hat bewusst kein Login. VPN ist der richtige Weg: verschlüsselt,
+nur deine eigenen Geräte, und am System muss nichts geändert werden.
+
 ## Zwei PCs, ein Gehirn — Vault-Sync
 
 Der Vault kann komplett gesynct werden (Syncthing, OneDrive, Obsidian Sync,

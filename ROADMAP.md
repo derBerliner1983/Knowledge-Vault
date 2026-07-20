@@ -29,16 +29,11 @@ Wahrheit, die KI schlägt vor, der Mensch entscheidet.
 | Update-Funktion | ⚙-Tab prüft gegen git/GitHub, zeigt Neuerungen, installiert per Klick (ff-only, mit Neustart-Hinweis); täglicher Check → Posteingang |
 | Obsidian-Plugin | Liegt im Vault (`.obsidian/plugins/zweites-gehirn/`): Graph-Ansicht als Tab in Obsidian, Ribbon-Icon 🧠, Befehl, einstellbare Server-Adresse |
 | 💬 Chat | Gespräch mit dem Vault übers lokale LLM — Suchleiter-Kontext (INDEX + Top-3-Notizen), antwortet nur daraus, klickbare Quellenangaben |
+| Von unterwegs | VPN-Anleitung im README (Tailscale / Fritz!Box-WireGuard) — sicher, ohne Portfreigabe und ohne eigenes Login-System |
 
 ## 📋 Backlog
 
 *(leer — alles Besprochene ist gebaut)*
-
-## 🔨 In Arbeit (beauftragt)
-
-1. ~~Obsidian-Plugin~~ ✅
-2. ~~Chat mit dem lokalen LLM~~ ✅
-3. Zugriff von unterwegs — VPN-Anleitung (WireGuard/Tailscale) im README
 
 ## 💡 Ideen (bewusst zurückgestellt)
 
