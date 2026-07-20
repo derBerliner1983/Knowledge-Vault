@@ -26,6 +26,7 @@ Wahrheit, die KI schlägt vor, der Mensch entscheidet.
 | Heimnetz-Zugriff | GUI-Schalter „Im Heimnetz erreichbar" — gilt sofort ohne Neustart, LAN-Adresse fürs Handy wird angezeigt |
 | Auto-Backup | Regelvorlage „Tägliche Sicherung (git)": abends git-Commit, nur bei Änderungen (standardmäßig aus) |
 | Vorschläge-Posteingang | Automat-Vorschläge einzeln im ⚙-Tab mit geplanten Schritten, „✓ Übernehmen" (rückgängig machbar) / „✕ Ablehnen", Zähler am Knopf |
+| Update-Funktion | ⚙-Tab prüft gegen git/GitHub, zeigt Neuerungen, installiert per Klick (ff-only, mit Neustart-Hinweis); täglicher Check → Posteingang |
 
 ## 📋 Backlog
 

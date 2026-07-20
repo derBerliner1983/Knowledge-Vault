@@ -44,7 +44,44 @@
     ladeVorschlaege();
     ladeUndoListe();
     ladeLog();
+    pruefeUpdate();
   }
+
+  // --- Update aus git ----------------------------------------------------------
+
+  const updateLos = document.getElementById("update-los");
+
+  async function pruefeUpdate() {
+    const el = document.getElementById("update-status");
+    el.textContent = "prüfe …";
+    updateLos.style.display = "none";
+    try {
+      const s = await (await fetch("/api/update")).json();
+      if (!s.ok) { el.innerHTML = `<span class="dim">Update-Prüfung nicht möglich: ${s.fehler}</span>`; return; }
+      if (!s.hinter) { el.innerHTML = `<span class="gut">✓ Auf dem neuesten Stand</span> <span class="dim">(${s.zweig})</span>`; return; }
+      el.innerHTML = `<span class="schlecht">⬇ ${s.hinter} Update(s) verfügbar:</span><br>` +
+        s.meldungen.map((m) => `<span class="dim">· ${m.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</span>`).join("<br>");
+      updateLos.style.display = "";
+    } catch (err) { el.textContent = err.message; }
+  }
+
+  document.getElementById("update-pruefen").onclick = pruefeUpdate;
+
+  updateLos.onclick = async () => {
+    updateLos.disabled = true; updateLos.textContent = "installiere …";
+    const el = document.getElementById("update-status");
+    try {
+      const r = await (await fetch("/api/update", { method: "POST" })).json();
+      if (!r.ok) { el.innerHTML = `<span class="schlecht">✗ ${r.fehler}</span>`; return; }
+      el.innerHTML = `<span class="gut">✓ Update eingespielt (${r.geaendert} Datei(en)).</span>` +
+        (r.neustart
+          ? ` <span class="schlecht">Bitte den Server neu starten</span> <span class="dim">(Fenster schließen und Installieren-und-Starten.bat erneut doppelklicken — bei Autostart: ab- und wieder anmelden).</span>`
+          : ` <span class="dim">Kein Neustart nötig.</span>`);
+      updateLos.style.display = "none";
+    } finally {
+      updateLos.disabled = false; updateLos.textContent = "Update jetzt installieren";
+    }
+  };
 
   // --- Vorschläge-Posteingang -------------------------------------------------
 

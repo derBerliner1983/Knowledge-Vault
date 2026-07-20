@@ -478,6 +478,49 @@ async function auftrag(llmCfg, text, { ausfuehren = false, modell = null } = {})
   return { plan, protokoll };
 }
 
+// --- Update aus git ------------------------------------------------------------
+
+function gitAusgabe(befehl, cwd = VAULT_ROOT) {
+  return execSync(befehl, { cwd, encoding: "utf8", timeout: 60000, stdio: ["ignore", "pipe", "pipe"] }).trim();
+}
+
+/** Prüft, ob es auf dem git-Remote eine neuere Version gibt. */
+function updateStatus(cwd = VAULT_ROOT) {
+  try {
+    const zweig = gitAusgabe("git rev-parse --abbrev-ref HEAD", cwd);
+    gitAusgabe(`git fetch --quiet origin ${zweig}`, cwd);
+    const hinter = Number(gitAusgabe(`git rev-list --count HEAD..origin/${zweig}`, cwd)) || 0;
+    const meldungen = hinter
+      ? gitAusgabe(`git log --oneline --no-decorate HEAD..origin/${zweig}`, cwd)
+          .split("\n").slice(0, 10).map((z) => z.replace(/^\w+\s/, ""))
+      : [];
+    return { ok: true, zweig, hinter, meldungen };
+  } catch (err) {
+    return { ok: false, fehler: (err.stderr || err.message || "git nicht verfügbar").toString().trim().slice(0, 300) };
+  }
+}
+
+/** Spielt Updates ein (nur Schnellvorlauf — lokale Änderungen bleiben sicher). */
+function updateEinspielen(cwd = VAULT_ROOT) {
+  try {
+    const zweig = gitAusgabe("git rev-parse --abbrev-ref HEAD", cwd);
+    const vorher = gitAusgabe("git rev-parse HEAD", cwd);
+    const ausgabe = gitAusgabe(`git pull --ff-only origin ${zweig}`, cwd);
+    const geaendert = gitAusgabe(`git diff --name-only ${vorher} HEAD`, cwd).split("\n").filter(Boolean);
+    const neustart = geaendert.some((d) => d.startsWith("_system/"));
+    log(`Update eingespielt (${geaendert.length} Datei(en))${neustart ? " — Neustart nötig" : ""}.`);
+    return { ok: true, ausgabe: ausgabe.slice(0, 500), geaendert: geaendert.length, neustart };
+  } catch (err) {
+    const text = (err.stderr || err.message || "").toString().trim().slice(0, 300);
+    return {
+      ok: false,
+      fehler: /divergent|ff-only|Not possible/i.test(text)
+        ? "Lokale und entfernte Änderungen laufen auseinander — bitte einmal von Hand lösen (git pull im Vault-Ordner)."
+        : text,
+    };
+  }
+}
+
 // --- Regeln ausführen --------------------------------------------------------
 
 function neueDateien(ordner) {
@@ -589,7 +632,8 @@ async function main() {
 module.exports = {
   frageLLM, listeModelle, aufloeseModell, auftrag, laufeRegel,
   fuehreAktionenAus, macheRueckgaengig, ladeUndo,
-  ladeVorschlaege, entferneVorschlag,
+  ladeVorschlaege, entferneVorschlag, schreibeVorschlag,
+  updateStatus, updateEinspielen,
   cronMatches, ladeKonfig, CONFIG_LOKAL,
 };
 

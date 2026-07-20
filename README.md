@@ -203,6 +203,17 @@ OS-eigenen Scheduler nutzen — Eintrag z. B.:
 `*/15 * * * * cd /Pfad/zu/Knowledge-Vault && node _system/automat.js --einmal`
 (Windows: Aufgabenplanung mit demselben Befehl).
 
+## Updates
+
+Im ⚙-Tab unter **Update** siehst du beim Öffnen automatisch, ob es auf
+GitHub eine neue Version des Systems gibt — mit Liste, was sich ändert.
+**„Update jetzt installieren"** spielt sie per `git pull` ein (nur
+Schnellvorlauf; deine Notizen und lokalen Änderungen sind sicher — bei
+Konflikten bricht es sauber ab und sagt dir Bescheid). Wenn Systemdateien
+betroffen sind, zeigt die GUI an, dass der Server einmal neu gestartet
+werden muss. Zusätzlich prüft der Server täglich im Hintergrund und legt
+bei neuen Versionen einen Hinweis in den Posteingang.
+
 ## Vom Handy oder Tablet aus (Heimnetz)
 
 Im ⚙-Tab unter **Server** den Haken **„Im Heimnetz erreichbar machen"**

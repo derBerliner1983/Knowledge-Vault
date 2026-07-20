@@ -414,6 +414,18 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Update aus git: Status prüfen / einspielen
+  if (url.pathname === "/api/update" && req.method === "GET") {
+    antworte(res, 200, automat.updateStatus());
+    return;
+  }
+  if (url.pathname === "/api/update" && req.method === "POST") {
+    const r = automat.updateEinspielen();
+    if (r.ok) reindex();
+    antworte(res, r.ok ? 200 : 500, r);
+    return;
+  }
+
   // Vorschläge-Posteingang: lesen, übernehmen, ablehnen
   if (url.pathname === "/api/vorschlaege" && req.method === "GET") {
     try { antworte(res, 200, { vorschlaege: automat.ladeVorschlaege() }); }
@@ -530,11 +542,27 @@ function bindeNeuFallsNoetig() {
   });
 }
 
+// Täglicher Update-Check: bei neuen Versionen landet ein Hinweis im Posteingang.
+function taeglicherUpdateCheck() {
+  try {
+    const s = automat.updateStatus();
+    if (!s.ok || !s.hinter) return;
+    if (automat.ladeVorschlaege().some((v) => v.regel === "Update-Prüfung")) return;
+    automat.schreibeVorschlag({ name: "Update-Prüfung" }, null,
+      `Es gibt ${s.hinter} Update(s) für das System:\n` +
+      s.meldungen.map((m) => `· ${m}`).join("\n") +
+      `\nInstallieren: ⚙-Tab → Update → „Update jetzt installieren".`);
+    console.log(`Update verfügbar (${s.hinter} Commit(s)) — Hinweis liegt im Posteingang.`);
+  } catch {}
+}
+
 server.listen(PORT, aktuellerHost, () => {
   reindex();
   starteUeberwachung();
   setInterval(automatTick, 20000);
   automatTick();
+  setTimeout(taeglicherUpdateCheck, 15000);
+  setInterval(taeglicherUpdateCheck, 24 * 3600 * 1000);
   meldeAdressen();
   console.log("Der Automat läuft mit: Crontab-Regeln aus _system/regeln.json werden jede Minute geprüft.");
   console.log("Beenden mit Strg+C. Neu indexieren: npm run index (oder Knopf in der Ansicht).");
