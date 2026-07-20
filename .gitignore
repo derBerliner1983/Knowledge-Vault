@@ -1,0 +1,12 @@
+node_modules/
+.DS_Store
+.obsidian/workspace*
+.trash/
+_system/.automat-state.json
+_system/automat-log.md
+_system/regeln.json.bak
+_system/regeln.lokal.json
+_system/.automat-undo.json
+_system/.papierkorb/
+_system/.vorschlaege.json
+_system/.sicherheit.json

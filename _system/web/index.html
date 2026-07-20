@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zweites Gehirn — Graph</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='%23ff9a1f'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="graph"></canvas>
+
+  <header id="topbar">
+    <div id="brand">
+      <span class="dot"></span>
+      <h1>Zweites&nbsp;<em>Gehirn</em></h1>
+      <span id="stats"></span>
+    </div>
+    <div id="controls">
+      <div id="suchbox">
+        <div id="suchzeile">
+          <input id="search" type="search" placeholder="Suchen … (auch im Inhalt)" autocomplete="off">
+          <select id="such-art" title="exakt = Volltext · Bedeutung = qmd-Suche">
+            <option value="exakt">exakt</option>
+            <option value="bedeutung">Bedeutung</option>
+          </select>
+        </div>
+        <div id="such-ergebnisse" class="hidden"></div>
+      </div>
+      <button id="reindex" title="Vault neu einlesen">⟳ Neu indexieren</button>
+      <button id="chat-btn" title="Mit dem Vault reden (lokales LLM)">💬 Chat</button>
+      <button id="automat-btn" title="Regeln, Aufträge und LLM-Status">⚙ Automat</button>
+    </div>
+  </header>
+
+  <div id="chat" class="hidden">
+    <div id="chat-card">
+      <button id="chat-close" title="Schließen">×</button>
+      <h2>💬 Mit dem Gehirn reden</h2>
+      <p class="dim">Antwortet nur aus deinen Notizen (lokales LLM, Suchleiter-Kontext) und nennt die Quellen.
+      Für tiefe Fragen über den ganzen Bestand bleibt Claude Code im Vault-Ordner die bessere Wahl.</p>
+      <div id="chat-verlauf"></div>
+      <div class="reihe">
+        <textarea id="chat-frage" rows="2" placeholder="z. B.: Was steht bei mir zur Wiki-Regel bei Widersprüchen?"></textarea>
+        <button id="chat-senden" class="primaer">Senden</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="automat" class="hidden">
+    <div id="automat-card">
+      <button id="automat-close" title="Schließen">×</button>
+      <h2>⚙ Der Automat</h2>
+
+      <section>
+        <h3>Lokales LLM</h3>
+        <div id="llm-status">Prüfe …</div>
+        <div class="form-grid">
+          <label>Anbieter
+            <select id="llm-anbieter">
+              <option value="lmstudio">LM Studio</option>
+              <option value="ollama">Ollama</option>
+              <option value="openai">OpenAI-kompatibel</option>
+              <option value="claude-cli">Claude Code (CLI)</option>
+            </select>
+          </label>
+          <label>Server-URL
+            <input id="llm-url" type="text" placeholder="http://localhost:1234">
+          </label>
+          <label>Modell
+            <select id="llm-modell"></select>
+          </label>
+          <label>API-Key (optional)
+            <input id="llm-schluessel" type="password" placeholder="leer lassen, wenn keiner nötig">
+          </label>
+        </div>
+        <label class="zeile-checkbox">
+          <input type="checkbox" id="llm-lokal">
+          <span>Nur für diesen Rechner (<b id="rechner-name">…</b>) speichern — für Vaults,
+          die auf mehrere PCs gesynct werden. Regeln &amp; Crontabs bleiben immer geteilt.</span>
+        </label>
+        <div class="reihe">
+          <button id="llm-speichern" class="primaer">LLM-Einstellungen speichern</button>
+          <span id="llm-meldung" class="dim"></span>
+        </div>
+      </section>
+
+      <section>
+        <h3>Server</h3>
+        <label class="zeile-checkbox">
+          <input type="checkbox" id="server-heimnetz">
+          <span>Im <b>Heimnetz</b> erreichbar machen (Handy/Tablet im WLAN).
+          Gilt nach dem Speichern sofort. Adresse: <b id="lan-adresse">—</b></span>
+        </label>
+        <div class="reihe">
+          <button id="server-speichern" class="primaer">Server-Einstellung speichern</button>
+          <span id="server-meldung" class="dim"></span>
+        </div>
+      </section>
+
+      <section>
+        <h3>Anmeldung &amp; MFA</h3>
+        <div id="mfa-bereich"><span class="dim">lade …</span></div>
+      </section>
+
+      <section>
+        <h3>Update</h3>
+        <div id="update-status" class="dim">—</div>
+        <div class="reihe">
+          <button id="update-pruefen">⬇ Nach Updates suchen</button>
+          <button id="update-los" class="primaer" style="display:none">Update jetzt installieren</button>
+        </div>
+      </section>
+
+      <section>
+        <h3>Vorschläge — Posteingang (du entscheidest)</h3>
+        <div id="vorschlaege" class="dim">—</div>
+      </section>
+
+      <section>
+        <h3>Auftrag an das LLM</h3>
+        <textarea id="auftrag-text" rows="3"
+          placeholder="z. B.: Leere die Inbox und sortiere die Notizen nach den Regeln in die passenden Ordner ein."></textarea>
+        <div class="reihe">
+          <select id="modell-wahl" title="Modell für diesen Auftrag"></select>
+          <button id="auftrag-plan">Nur Plan zeigen</button>
+          <button id="auftrag-los" class="primaer">Planen &amp; ausführen</button>
+        </div>
+        <div id="auftrag-ergebnis"></div>
+      </section>
+
+      <section>
+        <h3>Geteilten Claude-Chat importieren</h3>
+        <p class="dim" style="font-size:12px">Nur für Chats, die du selbst geteilt hast
+        (claude.ai → Teilen → Link kopieren). Der Chat wird als Quelle unter
+        <code>05 Quellen/Claude-Chats/</code> abgelegt und automatisch mit dem Claude-Konnektor verknüpft.</p>
+        <div class="reihe">
+          <input id="chatimport-url" type="text" placeholder="https://claude.ai/share/…">
+          <button id="chatimport-los" class="primaer">Importieren</button>
+        </div>
+        <div id="chatimport-fallback" style="display:none">
+          <textarea id="chatimport-text" rows="4" placeholder="Chat-Text hier einfügen (im Browser markieren und kopieren)"></textarea>
+          <div class="reihe"><button id="chatimport-text-los" class="primaer">Eingefügten Text speichern</button></div>
+        </div>
+        <div id="chatimport-meldung" class="dim"></div>
+      </section>
+
+      <section>
+        <h3>Konnektoren (externe Dienste — Claude, GitHub, …)</h3>
+        <p class="dim" style="font-size:12px">Jeder Link in deinen Notizen, dessen Adresse zu einem
+        Muster passt, wird dem Konnektor zugeordnet: farbige Punkte im Graph, Verweise im Panel,
+        Übersichtsseite unter <code>07 Konnektoren/</code>. Suche nach dem Namen (z. B. „claude")
+        zeigt alle Notizen mit solchen Verweisen.</p>
+        <div id="connectoren"></div>
+        <div class="reihe">
+          <button id="connector-neu">+ Neuer Konnektor</button>
+          <button id="connectoren-speichern" class="primaer">Konnektoren speichern</button>
+          <span id="connectoren-meldung" class="dim"></span>
+        </div>
+      </section>
+
+      <section>
+        <h3>Regeln (Crontab — unbegrenzt, direkt hier bearbeiten)</h3>
+        <div id="regeln"></div>
+        <div class="reihe">
+          <button id="regel-neu">+ Neue Regel</button>
+          <button id="regeln-speichern" class="primaer">Alle Regeln speichern</button>
+          <span id="regeln-meldung" class="dim"></span>
+        </div>
+      </section>
+
+      <section>
+        <h3>Aufräum-Bericht (ohne LLM, jederzeit kostenlos)</h3>
+        <div class="reihe"><button id="bericht-knopf">🧹 Bericht erstellen</button></div>
+        <div id="bericht"></div>
+      </section>
+
+      <section>
+        <h3>Verlauf — ausgeführte Aktionspläne (rückgängig machbar)</h3>
+        <div id="undo-liste" class="dim">—</div>
+      </section>
+
+      <section>
+        <h3>Protokoll</h3>
+        <pre id="automat-log">—</pre>
+      </section>
+    </div>
+  </div>
+
+  <div id="side">
+    <nav id="views">
+      <h3>Ansichten</h3>
+      <button data-mode="wolken" class="active">☁ Wolken</button>
+      <button data-mode="sphaere">◍ Sphäre</button>
+      <button data-mode="saeulen">▥ Säulen</button>
+      <button data-mode="radial">✳ Radial</button>
+      <button data-mode="nebel">✦ Nebel</button>
+      <p id="view-hint"></p>
+    </nav>
+
+    <aside id="panel" class="hidden">
+      <button id="panel-close" title="Schließen">×</button>
+      <h2 id="panel-title"></h2>
+      <p id="panel-path"></p>
+      <div id="panel-tags"></div>
+      <div id="panel-neighbors"></div>
+      <div id="panel-verweise"></div>
+      <a id="panel-open" class="button" href="#">In Obsidian öffnen</a>
+      <div id="panel-inhalt" class="hidden"></div>
+    </aside>
+  </div>
+
+  <aside id="legend"></aside>
+
+  <script src="vendor/d3.v7.min.js"></script>
+  <script src="vendor/qrcode.min.js"></script>
+  <script src="app.js"></script>
+  <script src="automat-ui.js"></script>
+  <script src="chat-ui.js"></script>
+</body>
+</html>

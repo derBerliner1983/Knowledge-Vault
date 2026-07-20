@@ -1,0 +1,9 @@
+{
+  "id": "zweites-gehirn",
+  "name": "Zweites Gehirn",
+  "version": "1.0.0",
+  "minAppVersion": "1.0.0",
+  "description": "Bettet die lokale Graph-Ansicht des Knowledge-Vaults (Server auf localhost:7777) direkt als Tab in Obsidian ein.",
+  "author": "Knowledge-Vault",
+  "isDesktopOnly": true
+}

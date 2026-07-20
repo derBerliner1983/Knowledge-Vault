@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zweites Gehirn — Anmeldung</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='%23ff9a1f'/%3E%3C/svg%3E">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      background: #000; color: #e9edf5;
+      font: 14px/1.5 "Avenir Next", "Segoe UI", system-ui, sans-serif;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .karte {
+      width: min(360px, 92vw);
+      background: rgba(10, 10, 12, 0.9);
+      border: 1px solid rgba(255, 154, 31, 0.25);
+      border-radius: 14px; padding: 28px;
+      box-shadow: 0 0 60px rgba(255, 154, 31, 0.12);
+    }
+    h1 { font-size: 15px; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 4px; }
+    h1 em { font-style: normal; color: #ff9a1f; }
+    p { color: #8a8f9c; font-size: 12px; margin-bottom: 18px; }
+    label { display: block; font-size: 11px; color: #8a8f9c; margin: 12px 0 4px; letter-spacing: 0.05em; }
+    input {
+      width: 100%; padding: 10px 12px;
+      background: rgba(255,255,255,0.05); color: #e9edf5;
+      border: 1px solid rgba(255,255,255,0.14); border-radius: 8px;
+      font: inherit; outline: none;
+    }
+    input:focus { border-color: #ff9a1f; }
+    #code { letter-spacing: 0.4em; text-align: center; font-size: 18px; }
+    button {
+      width: 100%; margin-top: 18px; padding: 11px;
+      background: rgba(255, 154, 31, 0.18); color: #fff;
+      border: 1px solid #ff9a1f; border-radius: 8px;
+      font: inherit; cursor: pointer;
+    }
+    button:disabled { opacity: 0.5; cursor: wait; }
+    #meldung { margin-top: 12px; font-size: 12px; color: #ff5a5a; min-height: 1.2em; }
+    .punkt { width: 10px; height: 10px; border-radius: 50%; background: #ff9a1f;
+      box-shadow: 0 0 12px #ff9a1f, 0 0 32px #ff9a1f; display: inline-block; margin-right: 8px; }
+  </style>
+</head>
+<body>
+  <form class="karte" id="form">
+    <h1><span class="punkt"></span>Zweites <em>Gehirn</em></h1>
+    <p>Dieses Gerät ist noch nicht angemeldet. Passwort und Einmalcode aus der Authenticator-App eingeben — danach wird das Gerät gemerkt.</p>
+    <label for="passwort">Passwort</label>
+    <input id="passwort" type="password" autocomplete="current-password" required>
+    <label for="code">Einmalcode (6 Ziffern)</label>
+    <input id="code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required>
+    <label for="geraet">Name dieses Geräts (optional)</label>
+    <input id="geraet" type="text" placeholder="z. B. Handy, Laptop Büro">
+    <button id="los" type="submit">Anmelden</button>
+    <div id="meldung"></div>
+  </form>
+  <script>
+    document.getElementById("form").addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const knopf = document.getElementById("los");
+      const meldung = document.getElementById("meldung");
+      knopf.disabled = true; meldung.textContent = "";
+      try {
+        const res = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            passwort: document.getElementById("passwort").value,
+            code: document.getElementById("code").value,
+            geraet: document.getElementById("geraet").value.trim() || undefined,
+          }),
+        });
+        const j = await res.json();
+        if (!res.ok) throw new Error(j.fehler || "Anmeldung fehlgeschlagen");
+        location.href = "/";
+      } catch (err) {
+        meldung.textContent = "✗ " + err.message;
+        knopf.disabled = false;
+      }
+    });
+    document.getElementById("passwort").focus();
+  </script>
+</body>
+</html>

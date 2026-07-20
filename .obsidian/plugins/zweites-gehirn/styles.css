@@ -1,0 +1,25 @@
+/* Zweites Gehirn — die eingebettete Ansicht füllt den ganzen Tab. */
+.zg-rahmen {
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.zg-iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: #000;
+}
+.zg-hinweis {
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.zg-hinweis button {
+  font-size: 12px;
+  cursor: pointer;
+}

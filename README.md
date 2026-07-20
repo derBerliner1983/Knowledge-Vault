@@ -1,0 +1,356 @@
+# Knowledge-Vault — Second Brain mit Claude Code
+
+Ein Obsidian-Vault, der von diesem System verwaltet und sortiert wird —
+gebaut nach der `Bauanleitung_Second-Brain.pdf` (THE NODE AI).
+
+**Grundsatz:** Markdown ist die einzige Wahrheit. Obsidian ist das Regal,
+Claude ist der Bibliothekar, die Graph-Ansicht ist nur das Fenster.
+
+## Installation (einmalig)
+
+> **Hinweis Branch:** Das System liegt derzeit auf dem Branch
+> `claude/obsidian-system-setup-design-dpzavx`. Beim ZIP-Download auf
+> GitHub also zuerst oben diesen Branch auswählen, bei git:
+> `git clone` und dann `git checkout claude/obsidian-system-setup-design-dpzavx`.
+> (Entfällt, sobald der Branch nach `main` gemergt ist.)
+
+### Windows 11 — ein Doppelklick
+
+1. Repo holen: auf GitHub **„Code → Download ZIP"**, entpacken (oder `git clone`).
+2. Im Ordner **`Installieren-und-Starten.bat`** doppelklicken — das Skript
+   installiert Node.js automatisch (über winget), falls es fehlt, indexiert den
+   Vault, startet den Server und öffnet den Browser. Fenster offen lassen.
+   **Ein Fenster = alles läuft:** Graph-Ansicht, Live-Überwachung und der
+   Automat mit allen Crontab-Regeln.
+3. Optional: **`Autostart-Einrichten.bat`** doppelklicken — dann startet der
+   Server ab der nächsten Anmeldung automatisch und unsichtbar mit Windows;
+   die Ansicht ist dann immer unter http://localhost:7777 da.
+   Rückgängig: `Autostart-Entfernen.bat`.
+
+### Mac / Linux / manuell
+
+1. **Node.js installieren** (ab Version 18): [nodejs.org](https://nodejs.org) —
+   LTS-Version herunterladen und installieren. Prüfen: `node --version`
+2. **Repo holen** (Terminal bzw. PowerShell):
+
+```bash
+git clone https://github.com/derBerliner1983/Knowledge-Vault.git
+cd Knowledge-Vault
+npm run index     # Vault einlesen → _system/graph.json + INDEX.md-Bestand
+```
+
+Ohne git geht auch: auf GitHub „Code → Download ZIP", entpacken, im
+entpackten Ordner ein Terminal öffnen.
+
+Keine weiteren Abhängigkeiten — alle Bibliotheken (d3, QR-Code) liegen
+lokal unter `_system/web/vendor/`, es wird nichts aus dem Netz geladen.
+
+## Starten (Graph-Ansicht auf einem Port)
+
+```bash
+npm start
+```
+
+Dann im Browser öffnen: **http://localhost:7777**
+
+Anderer Port bei Bedarf:
+
+```bash
+node _system/server.js --port 8080
+# oder: PORT=8080 npm start
+```
+
+### Die fünf Ansichten (Umschalter rechts, wie im Video)
+
+| Ansicht | Zeigt |
+|---|---|
+| ☁ Wolken | Alle Cluster als getrennte Farbwolken (Force-Layout) |
+| ◍ Sphäre | Der ganze Bestand als rotierender Globus aus Punkten |
+| ▥ Säulen | Punktmatrix-Säulen pro Cluster, oranger Fundament-Hub |
+| ✳ Radial | Eine Notiz im Zentrum, Verknüpfungen als Speichen |
+| ✦ Nebel | Tiefer Zoom in ein Cluster als Partikelnebel |
+
+Die Referenz-Frames aus dem Video liegen in `_system/design-referenz/`.
+
+In jeder Ansicht: Suchen (oben rechts), Cluster per Leiste unten
+ein-/ausblenden (im Nebel: Cluster wählen), Knoten anklicken für Details
+und **„In Obsidian öffnen"**, Knopf **„Neu indexieren"** liest den Vault
+frisch ein. Beenden mit `Strg+C`.
+
+**Lesen ohne App-Wechsel:** Ein Klick auf einen Knoten zeigt die Notiz
+**komplett gerendert** im Seitenpanel (Überschriften, Listen, Tabellen,
+Code, Zitate). Wikilinks darin sind klickbar und springen zur nächsten
+Notiz — zum Schreiben geht es per Knopf weiter nach Obsidian.
+
+**Suche:** Das Suchfeld filtert live den Graph (Titel, Tags, Pfad) und
+durchsucht gleichzeitig den **Inhalt aller Notizen** — Treffer erscheinen
+als Liste mit Fundstellen-Ausschnitten, ein Klick springt zur Notiz im
+Graph. Der Umschalter daneben wählt die Suchart: **exakt** (Volltext) oder
+**Bedeutung** — letzteres nutzt [qmd](https://github.com/tobi/qmd), falls
+installiert (findet auch Notizen, die das gesuchte Wort gar nicht
+enthalten); ohne qmd erscheint ein Hinweis mit den Einrichtungsschritten.
+
+**Live:** Der Server überwacht den Vault. Legst du in Obsidian eine Notiz an
+(oder änderst eine), wird automatisch neu indexiert und die Graph-Ansicht
+aktualisiert sich von selbst nach wenigen Sekunden — kein Knopfdruck nötig.
+
+### Der ⚙-Automat-Tab (oben rechts)
+
+- **Lokales LLM:** zeigt, ob LM Studio/Ollama erreichbar ist, welche Modelle
+  heruntergeladen sind und welches gerade **im RAM geladen** ist (●).
+- **Auftrag an das LLM:** Freitext wie *„Leere die Inbox und sortiere die
+  Notizen nach den Regeln ein."* — das LLM bekommt die Vault-Regeln
+  (INDEX.md, CLAUDE.md) mit und antwortet mit einem Aktionsplan
+  (verschieben, taggen, Notiz anlegen, anhängen). **„Nur Plan zeigen"**
+  lässt dich erst abnicken; **„Planen & ausführen"** macht es direkt.
+  Ausgeführt wird immer geprüft: nur `.md`-Dateien, nur innerhalb des
+  Vaults, Systemordner sind tabu, nichts wird überschrieben.
+- **Regeln:** jede Crontab-Regel per **„▶ Jetzt"** sofort starten.
+- **Aufräum-Bericht (ohne LLM):** ein Knopf, kostenlos und deterministisch —
+  listet kaputte Wikilinks, verwaiste Notizen (keine Verknüpfungen),
+  Notizen ohne Tags, Duplikat-Verdacht (gleicher Dateiname) und
+  Inbox-Einträge, die älter als 14 Tage sind. Klick auf einen Eintrag
+  springt zur Notiz im Graph.
+- **Verlauf & Rückgängig:** Jeder ausgeführte Aktionsplan (Auftrag oder
+  Regel) erscheint im Abschnitt „Verlauf" und lässt sich per
+  **„↩ Rückgängig"** komplett umkehren — Verschobenes kommt zurück,
+  geänderte Notizen werden wiederhergestellt, angelegte Notizen wandern
+  in den Papierkorb (`_system/.papierkorb`) statt gelöscht zu werden.
+- **Alles direkt in der GUI konfigurierbar:** LLM-Einstellungen (Anbieter,
+  URL, Modell, API-Key) und **unbegrenzt viele Regeln** — anlegen
+  („+ Neue Regel"), bearbeiten, an-/abschalten, löschen. Zeitpläne per
+  Crontab-Feld mit Vorlagen-Auswahl (alle 15 Min, täglich 21:00, werktags 9:00 …).
+  „Speichern" schreibt geprüft nach `_system/regeln.json` (mit Backup
+  `.bak`) — der laufende Automat übernimmt Änderungen **sofort**, ohne
+  Neustart. Die Datei von Hand zu bearbeiten geht weiterhin, ist aber
+  nicht mehr nötig.
+
+## Obsidian anbinden
+
+Diesen Ordner in Obsidian als Vault öffnen („Ordner als Vault öffnen").
+Wichtig: **Sortiert wird nicht von Hand**, sondern über das System —
+Neues in `00 Inbox` ablegen; der Automat macht Vorschläge, die du im
+⚙-Posteingang abnickst.
+
+**Graph direkt in Obsidian (Plugin):** Der Vault bringt ein fertiges
+Plugin mit (`.obsidian/plugins/zweites-gehirn/`). Einmalig aktivieren:
+Obsidian-Einstellungen → **Community-Plugins** → „Eingeschränkten Modus
+deaktivieren" → **„Zweites Gehirn"** einschalten. Danach öffnet das
+🧠-Symbol in der linken Leiste (oder der Befehl „Graph-Ansicht öffnen")
+die komplette Ansicht — Graph, Suche, ⚙-Automat — als Tab in Obsidian.
+Voraussetzung: der Server läuft (`Installieren-und-Starten.bat` bzw.
+`npm start`); die Adresse ist in den Plugin-Einstellungen änderbar.
+
+## Die Bausteine
+
+| Baustein | Datei/Ordner | Zweck |
+|---|---|---|
+| Katalog | `INDEX.md` | Eine Zeile pro Bereich; Bestand wird von `npm run index` gepflegt |
+| Regelwerk | `CLAUDE.md` | Brain-First-Suchleiter + Ordnungs-Regeln für Claude Code |
+| Wiki | `09 Wiki/` | KI-gepflegtes, verdichtetes Wissen (`_SCHEMA.md`, `log.md`) |
+| Quellen | `05 Quellen/` | Rohquellen fürs Wiki + importierte Claude-Chats — unantastbar |
+| Konnektoren | `07 Konnektoren/` + `_system/connectoren.json` | Externe Dienste: Erkennung, Übersichtsseiten, Bilder |
+| Indexer | `_system/indexer.js` | Deterministisch, ohne KI: Titel, Links, Tags, Verweise → `graph.json` |
+| Ansicht | `_system/server.js` + `_system/web/` | Lokaler Server (Port 7777): Graph, Suche, Chat, ⚙-Tab |
+| Automat | `_system/automat.js` + `_system/regeln.json` | Crontab-Regeln, LLM-Aufträge, Aktionspläne, Undo |
+| Sicherheit | `_system/sicherheit.js` | Anmeldung, MFA (TOTP), Geräte-Sessions |
+| Obsidian-Plugin | `.obsidian/plugins/zweites-gehirn/` | Die Ansicht als Tab direkt in Obsidian |
+
+## Der Automat — Crontabs, Regeln und lokales LLM (optional)
+
+Der Automat führt Regeln nach Zeitplan aus — Crontab-Syntax, definiert in
+**`_system/regeln.json`** (am einfachsten über die GUI, ⚙-Tab). Damit geht
+genau das Muster „wenn etwas in der Inbox landet, dann mache …".
+
+**Er läuft automatisch im Server mit** — `npm start` (bzw. die .bat)
+genügt, es ist kein zweites Programm nötig. Die Zeiten sind die lokale
+Uhrzeit deines Rechners. Nur für Sonderfälle gibt es zusätzlich:
+
+```bash
+npm run automat           # Automat allein, ohne Graph-Server (headless)
+npm run automat:einmal    # ein einzelner Durchlauf (für OS-Crontab/Taskplaner)
+```
+
+(Nicht beides gleichzeitig mit `npm start` laufen lassen, sonst laufen
+Regeln doppelt.)
+
+Eine Regel besteht aus:
+
+| Feld | Bedeutung |
+|---|---|
+| `zeitplan` | Crontab, 5 Felder: `Minute Stunde Monatstag Monat Wochentag` — z. B. `*/15 * * * *` = alle 15 Minuten, `0 21 * * *` = täglich 21:00 |
+| `ausloeser` | optional: `{ "typ": "neue-datei", "ordner": "00 Inbox" }` — nur neue/geänderte Notizen dort werden verarbeitet (Dateien mit `_` am Anfang nie) |
+| `aktion` | `llm` (Notiz + Prompt ans Sprachmodell), `index` (Indexer laufen lassen), `befehl` (beliebiger Shell-Befehl, z. B. `qmd embed`) |
+| `ergebnis` | für `llm`: `vorschlag` (Standard — landet im **Posteingang** des ⚙-Tabs, keine Notiz wird geändert), `anhang` (Antwort unten an die Notiz), `tags` (Tags ins Frontmatter), `aktionen` (Aktionsplan direkt ausführen, rückgängig machbar) |
+
+**Lokales LLM statt Claude:** In `regeln.json` unter `llm` einstellbar:
+
+- `"anbieter": "lmstudio"` (Standard) — [lmstudio.ai](https://lmstudio.ai)
+  installieren, ein Modell laden, im Developer-Tab den Server starten.
+  `"modell": "auto"` nimmt automatisch das Modell, das gerade im RAM
+  geladen ist; der ⚙-Automat-Tab zeigt den Zustand an.
+- `"anbieter": "ollama"` — [ollama.com](https://ollama.com), dann
+  z. B. `ollama pull qwen2.5:7b` (`"url": "http://localhost:11434"`).
+- `"anbieter": "openai"` — jeder andere OpenAI-kompatible Server.
+- `"anbieter": "claude-cli"` — nutzt das installierte Claude Code (`claude -p`).
+
+Neben dem Zeitplan geht alles auch **manuell**: im ⚙-Automat-Tab der
+Web-Ansicht — Regel per Knopf starten oder freien Auftrag eintippen.
+
+**Auto-Backup:** Die mitgelieferte Regel **„Tägliche Sicherung (git)"**
+(im ⚙-Tab aktivieren) sichert den ganzen Vault jeden Abend um 23:00 als
+git-Commit — nur wenn sich etwas geändert hat. Empfohlen, bevor du
+Regeln mit „Aktionsplan direkt ausführen" scharf schaltest. Soll auch zu
+GitHub hochgeladen werden, ergänze im Befehl ` && git push`. Ohne git:
+Befehl z. B. durch einen ZIP-Aufruf ersetzen
+(Windows: `tar -a -c -f Backup.zip *.md "0*" "9*"`).
+
+**Wiki-Ingest:** Rohquellen (Artikel, Transkripte, Exzerpte) kommen nach
+`05 Quellen`. Die mitgelieferte Regel **„Quelle ins Wiki einarbeiten
+(Entwurf)"** (im ⚙-Tab per Haken aktivieren) lässt das LLM für jede neue
+Quelle eine Wiki-Seite nach `09 Wiki/_SCHEMA.md` entwerfen — mit
+Quellen-Link, Vernetzung und Log-Eintrag; die Seite trägt den Status
+„Entwurf (Automat)" und die Quelle selbst wird nie verändert. Für
+anspruchsvolle Quellen (Widerspruchs-Abgleich über den Bestand) bleibt
+der Ingest-Prompt für Claude Code die bessere Wahl.
+
+Grundsatz bleibt: **Die KI schlägt vor, du entscheidest.** Der Standard-Modus
+`vorschlag` verschiebt und ändert nichts — jeder Vorschlag erscheint im
+**Posteingang** des ⚙-Tabs (Zähler am Knopf) mit den geplanten Schritten:
+**„✓ Übernehmen"** führt sie aus (rückgängig machbar über den Verlauf),
+**„✕ Ablehnen"** verwirft sie. Statt `npm run automat` kannst du auch den
+OS-eigenen Scheduler nutzen — Eintrag z. B.:
+`*/15 * * * * cd /Pfad/zu/Knowledge-Vault && node _system/automat.js --einmal`
+(Windows: Aufgabenplanung mit demselben Befehl).
+
+## Konnektoren — Claude, GitHub und andere Dienste verweisen
+
+Nicht alles muss in Obsidian liegen: Ein normaler Link in einer Notiz
+reicht. Konnektoren machen daraus ein System — definiert im ⚙-Tab
+(**Konnektoren**: Name, Domain-Muster wie `claude.ai`, Farbe, optional
+ein Bild-Upload). Ab dann gilt für jeden passenden Link automatisch:
+
+- **Graph:** farbige Konnektor-Punkte an der Notiz; die Übersichtsseite
+  jedes Dienstes hängt als eigener Knoten im Netz.
+- **Panel:** Abschnitt „Verweise" mit Bild/Farbe — Klick öffnet den Dienst.
+- **„Zeige mir alles von Claude":** einfach „claude" ins Suchfeld — alle
+  Notizen mit Claude-Verweisen leuchten auf. Und in Obsidian liegt unter
+  `07 Konnektoren/Claude.md` eine **automatisch gepflegte Markdown-Seite**
+  mit allen Verweisen, gruppiert nach Herkunfts-Notiz.
+
+Beispiel: `03 Wissen/Konnektoren-Demo.md`. Claude, GitHub, YouTube und
+Wikipedia sind vordefiniert — beliebig erweiterbar, unbegrenzt.
+
+**Geteilte Claude-Chats importieren:** Chats werden grundsätzlich nie
+ausgelesen. Nur wenn du selbst einen Chat teilst (claude.ai → Teilen),
+kannst du den Link im ⚙-Tab importieren: Der Inhalt landet als Quelle
+unter `05 Quellen/Claude-Chats/` (mit Link im Kopf, dadurch automatisch
+am Claude-Konnektor). Liefert die geteilte Seite ihren Inhalt nur im
+Browser, bietet die GUI ein Einfügen-Feld an — kopieren, einfügen,
+gespeichert.
+
+## Mit dem Gehirn reden (💬 Chat)
+
+Der Knopf **💬 Chat** (oben rechts) öffnet ein Gespräch mit deinem Vault
+über das lokale LLM. Der Chat folgt der Brain-First-Suchleiter: Er bekommt
+den Katalog (INDEX.md) plus die drei besten Notizen zur Frage als Kontext,
+antwortet **nur daraus** und nennt am Ende die Quellen — ein Klick auf
+eine Quelle springt zur Notiz im Graph. Findet er nichts, sagt er das
+ehrlich, statt zu raten. Für tiefe Fragen über den ganzen Bestand
+(Widerspruchs-Abgleich, Umstrukturierung) bleibt Claude Code im
+Vault-Ordner die stärkere Wahl.
+
+## Updates
+
+Im ⚙-Tab unter **Update** siehst du beim Öffnen automatisch, ob es auf
+GitHub eine neue Version des Systems gibt — mit Liste, was sich ändert.
+**„Update jetzt installieren"** spielt sie per `git pull` ein (nur
+Schnellvorlauf; deine Notizen und lokalen Änderungen sind sicher — bei
+Konflikten bricht es sauber ab und sagt dir Bescheid). Wenn Systemdateien
+betroffen sind, zeigt die GUI an, dass der Server einmal neu gestartet
+werden muss. Zusätzlich prüft der Server täglich im Hintergrund und legt
+bei neuen Versionen einen Hinweis in den Posteingang.
+
+## Anmeldung & MFA (empfohlen vor Heimnetz/VPN)
+
+Im ⚙-Tab unter **Anmeldung & MFA**: Passwort wählen, den QR-Code mit einer
+Authenticator-App scannen (Google Authenticator, Aegis, 2FAS, Microsoft
+Authenticator — Standard-TOTP), Code bestätigen — fertig. Ab dann gilt:
+
+- **Neues Gerät** (Browser ohne gemerkte Sitzung) → Login-Seite mit
+  Passwort **und** Einmalcode.
+- **Bekanntes Gerät** wird 180 Tage gemerkt und kommt direkt rein.
+- Im ⚙-Tab siehst du alle angemeldeten Geräte und kannst jedes einzeln
+  **abmelden** (dann verlangt es beim nächsten Mal wieder MFA).
+- Nach fünf Fehlversuchen bremst der Server Anmeldeversuche aus.
+- **Notfall** (Passwort/Handy weg): am Rechner die Datei
+  `_system/.sicherheit.json` löschen — der Schutz ist zurückgesetzt und
+  kann neu eingerichtet werden. (Die Datei ist bewusst lokal und wird
+  nicht gesynct; auf dem zweiten PC einmal separat einrichten.)
+
+## Vom Handy oder Tablet aus (Heimnetz)
+
+Im ⚙-Tab unter **Server** den Haken **„Im Heimnetz erreichbar machen"**
+setzen und speichern — gilt sofort, ohne Neustart. Daneben steht die
+Adresse fürs Handy (z. B. `http://192.168.1.23:7777`); im selben WLAN
+öffnen, fertig. Windows fragt beim ersten Mal einmal nach der
+Firewall-Freigabe („Zulassen"). Haken raus = der Server ist wieder nur
+von diesem Rechner erreichbar.
+
+## Von unterwegs (VPN — die sichere Variante)
+
+Das System bleibt bewusst lokal: kein Cloud-Konto, kein offenes Internet.
+Wer von unterwegs an sein Gehirn will, holt sich per VPN einfach „sein
+Heimnetz in die Tasche" — dann funktioniert die normale Heimnetz-Adresse
+(siehe oben) auch mobil. Drei bewährte Wege, vom einfachsten zum
+klassischsten:
+
+1. **Tailscale** (am einfachsten): [tailscale.com](https://tailscale.com)
+   auf PC und Handy installieren, mit demselben Konto anmelden — fertig.
+   Der PC bekommt eine feste `100.x.x.x`-Adresse; im ⚙-Tab den
+   Heimnetz-Haken setzen und am Handy `http://100.x.x.x:7777` öffnen.
+   Kostenlos für den Privatgebrauch, keine Router-Konfiguration nötig.
+2. **WireGuard über die Fritz!Box**: Fritz!OS ab 7.50 kann WireGuard
+   eingebaut (Internet → Freigaben → VPN → WireGuard). Die erzeugte
+   Konfiguration mit der WireGuard-App am Handy scannen — unterwegs
+   VPN einschalten und die normale Heimnetz-Adresse öffnen.
+3. **Anderer Router / eigener Server**: WireGuard-Server im Heimnetz
+   (z. B. Raspberry Pi) plus DynDNS.
+
+**Wichtig:** Den Server auch mit aktivierter Anmeldung + MFA nicht per
+Portfreigabe direkt ins Internet stellen — VPN ist der richtige Weg:
+verschlüsselt, nur deine eigenen Geräte, keine Angriffsfläche. Die
+Anmeldung ist die zweite Verteidigungslinie, nicht die erste.
+
+## Zwei PCs, ein Gehirn — Vault-Sync
+
+Der Vault kann komplett gesynct werden (Syncthing, OneDrive, Obsidian Sync,
+git …) — **die Konfiguration wandert automatisch mit**, denn Regeln und
+Crontabs liegen im Vault (`_system/regeln.json`). Auf dem zweiten PC also
+nur syncen lassen und `Installieren-und-Starten.bat` doppelklicken.
+
+Zwei Dinge sind dafür vorbereitet:
+
+- **LLM-Einstellungen pro Rechner:** Haben die PCs unterschiedliche Modelle
+  oder Server (z. B. LM Studio nur auf einem), im ⚙-Tab den Haken
+  **„Nur für diesen Rechner speichern"** setzen. Das landet in
+  `_system/regeln.lokal.json`, die nicht gesynct werden sollte
+  (steht in `.gitignore`; bei Syncthing/OneDrive die Datei vom Sync
+  ausnehmen). Regeln und Crontabs bleiben immer geteilt.
+- **Regeln an einen Rechner binden:** Damit eine Crontab-Regel nicht auf
+  beiden PCs gleichzeitig läuft (doppelte Vorschläge!), im Regel-Editor das
+  Feld **„Nur auf Rechner"** ausfüllen — der eigene Rechnername wird
+  angezeigt. Leer = Regel läuft überall.
+
+## Bedeutungssuche (optional, empfohlen)
+
+[qmd](https://github.com/tobi/qmd) installieren, dann:
+
+```bash
+qmd collection add /Pfad/zu/Knowledge-Vault
+qmd embed
+qmd query "unscharf formulierte Frage" -n 5
+claude plugin install qmd@qmd
+```
+
+Läuft komplett lokal — keine Cloud, keine Kosten.

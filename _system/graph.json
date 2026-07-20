@@ -1,0 +1,460 @@
+{
+  "meta": {
+    "vaultName": "Knowledge-Vault",
+    "generatedAt": "2026-07-20T18:58:38.632Z",
+    "notes": 23,
+    "edges": 23
+  },
+  "clusters": [
+    {
+      "id": "00 Inbox",
+      "count": 1
+    },
+    {
+      "id": "01 Daily Notes",
+      "count": 1
+    },
+    {
+      "id": "02 Projekte",
+      "count": 1
+    },
+    {
+      "id": "03 Wissen",
+      "count": 2
+    },
+    {
+      "id": "04 Personen",
+      "count": 1
+    },
+    {
+      "id": "05 Quellen",
+      "count": 1
+    },
+    {
+      "id": "07 Konnektoren",
+      "count": 4
+    },
+    {
+      "id": "08 Vorlagen",
+      "count": 4
+    },
+    {
+      "id": "09 Wiki",
+      "count": 2
+    },
+    {
+      "id": "99 Archiv",
+      "count": 1
+    },
+    {
+      "id": "Wurzel",
+      "count": 5
+    }
+  ],
+  "nodes": [
+    {
+      "id": "00 Inbox/_Über diesen Ordner.md",
+      "title": "_Über diesen Ordner",
+      "cluster": "00 Inbox",
+      "tags": [
+        "meta"
+      ],
+      "words": 15,
+      "extern": [],
+      "links": 1
+    },
+    {
+      "id": "01 Daily Notes/_Über diesen Ordner.md",
+      "title": "_Über diesen Ordner",
+      "cluster": "01 Daily Notes",
+      "tags": [
+        "meta"
+      ],
+      "words": 8,
+      "extern": [],
+      "links": 1
+    },
+    {
+      "id": "02 Projekte/_Über diesen Ordner.md",
+      "title": "_Über diesen Ordner",
+      "cluster": "02 Projekte",
+      "tags": [
+        "meta"
+      ],
+      "words": 13,
+      "extern": [],
+      "links": 1
+    },
+    {
+      "id": "03 Wissen/Bauanleitung.md",
+      "title": "Bauanleitung — Second Brain mit Claude Code",
+      "cluster": "03 Wissen",
+      "tags": [
+        "second-brain",
+        "wissen"
+      ],
+      "words": 174,
+      "extern": [],
+      "links": 4
+    },
+    {
+      "id": "03 Wissen/Konnektoren-Demo.md",
+      "title": "Konnektoren-Demo",
+      "cluster": "03 Wissen",
+      "tags": [
+        "demo",
+        "wissen"
+      ],
+      "words": 30,
+      "extern": [
+        {
+          "url": "https://claude.ai/share/beispiel-123",
+          "text": "Second-Brain-Planung",
+          "connector": "claude"
+        },
+        {
+          "url": "https://github.com/derBerliner1983/Knowledge-Vault",
+          "text": "Knowledge-Vault auf GitHub",
+          "connector": "github"
+        },
+        {
+          "url": "https://de.wikipedia.org/wiki/Zettelkasten",
+          "text": "Zettelkasten",
+          "connector": "wikipedia"
+        },
+        {
+          "url": "https://youtu.be/mHSOsy_usAg",
+          "text": "",
+          "connector": "youtube"
+        }
+      ],
+      "links": 1
+    },
+    {
+      "id": "04 Personen/_Über diesen Ordner.md",
+      "title": "_Über diesen Ordner",
+      "cluster": "04 Personen",
+      "tags": [
+        "meta"
+      ],
+      "words": 8,
+      "extern": [],
+      "links": 1
+    },
+    {
+      "id": "05 Quellen/_Über diesen Ordner.md",
+      "title": "_Über diesen Ordner",
+      "cluster": "05 Quellen",
+      "tags": [
+        "meta"
+      ],
+      "words": 78,
+      "extern": [],
+      "links": 2
+    },
+    {
+      "id": "07 Konnektoren/Claude.md",
+      "title": "Claude — alle Verweise",
+      "cluster": "07 Konnektoren",
+      "tags": [
+        "claude",
+        "konnektor",
+        "meta"
+      ],
+      "words": 28,
+      "extern": [],
+      "links": 1
+    },
+    {
+      "id": "07 Konnektoren/GitHub.md",
+      "title": "GitHub — alle Verweise",
+      "cluster": "07 Konnektoren",
+      "tags": [
+        "github",
+        "konnektor",
+        "meta"
+      ],
+      "words": 34,
+      "extern": [],
+      "links": 2
+    },
+    {
+      "id": "07 Konnektoren/Wikipedia.md",
+      "title": "Wikipedia — alle Verweise",
+      "cluster": "07 Konnektoren",
+      "tags": [
+        "konnektor",
+        "meta",
+        "wikipedia"
+      ],
+      "words": 28,
+      "extern": [],
+      "links": 1
+    },
+    {
+      "id": "07 Konnektoren/YouTube.md",
+      "title": "YouTube — alle Verweise",
+      "cluster": "07 Konnektoren",
+      "tags": [
+        "konnektor",
+        "meta",
+        "youtube"
+      ],
+      "words": 28,
+      "extern": [],
+      "links": 1
+    },
+    {
+      "id": "08 Vorlagen/Prompt-Vorlagen für Claude Code.md",
+      "title": "Prompt-Vorlagen für Claude Code",
+      "cluster": "08 Vorlagen",
+      "tags": [
+        "claude-code",
+        "vorlage"
+      ],
+      "words": 228,
+      "extern": [],
+      "links": 1
+    },
+    {
+      "id": "08 Vorlagen/Vorlage Daily Note.md",
+      "title": "{{date:YYYY-MM-DD}}",
+      "cluster": "08 Vorlagen",
+      "tags": [
+        "daily"
+      ],
+      "words": 15,
+      "extern": [],
+      "links": 0
+    },
+    {
+      "id": "08 Vorlagen/Vorlage Person.md",
+      "title": "Name",
+      "cluster": "08 Vorlagen",
+      "tags": [
+        "person"
+      ],
+      "words": 10,
+      "extern": [],
+      "links": 0
+    },
+    {
+      "id": "08 Vorlagen/Vorlage Projekt.md",
+      "title": "Projektname",
+      "cluster": "08 Vorlagen",
+      "tags": [
+        "projekt"
+      ],
+      "words": 22,
+      "extern": [],
+      "links": 0
+    },
+    {
+      "id": "09 Wiki/_SCHEMA.md",
+      "title": "Regeln dieses Wiki",
+      "cluster": "09 Wiki",
+      "tags": [],
+      "words": 205,
+      "extern": [],
+      "links": 2
+    },
+    {
+      "id": "09 Wiki/log.md",
+      "title": "Wiki-Protokoll",
+      "cluster": "09 Wiki",
+      "tags": [],
+      "words": 29,
+      "extern": [],
+      "links": 1
+    },
+    {
+      "id": "99 Archiv/_Über diesen Ordner.md",
+      "title": "_Über diesen Ordner",
+      "cluster": "99 Archiv",
+      "tags": [
+        "meta"
+      ],
+      "words": 9,
+      "extern": [],
+      "links": 0
+    },
+    {
+      "id": "CLAUDE.md",
+      "title": "Knowledge-Vault — Regelwerk",
+      "cluster": "Wurzel",
+      "tags": [],
+      "words": 345,
+      "extern": [],
+      "links": 0
+    },
+    {
+      "id": "INDEX.md",
+      "title": "INDEX — Katalog des Vaults",
+      "cluster": "Wurzel",
+      "tags": [],
+      "words": 297,
+      "extern": [],
+      "links": 0
+    },
+    {
+      "id": "README.md",
+      "title": "Knowledge-Vault — Second Brain mit Claude Code",
+      "cluster": "Wurzel",
+      "tags": [],
+      "words": 2482,
+      "extern": [
+        {
+          "url": "https://github.com/tobi/qmd",
+          "text": "qmd",
+          "connector": "github"
+        }
+      ],
+      "links": 0
+    },
+    {
+      "id": "ROADMAP.md",
+      "title": "Roadmap — Knowledge-Vault / Zweites Gehirn",
+      "cluster": "Wurzel",
+      "tags": [],
+      "words": 562,
+      "extern": [],
+      "links": 0
+    },
+    {
+      "id": "Start hier.md",
+      "title": "Start hier",
+      "cluster": "Wurzel",
+      "tags": [
+        "meta"
+      ],
+      "words": 191,
+      "extern": [],
+      "links": 5
+    }
+  ],
+  "edges": [
+    {
+      "source": "00 Inbox/_Über diesen Ordner.md",
+      "target": "08 Vorlagen/Prompt-Vorlagen für Claude Code.md"
+    },
+    {
+      "source": "01 Daily Notes/_Über diesen Ordner.md",
+      "target": "08 Vorlagen/Vorlage Daily Note.md"
+    },
+    {
+      "source": "02 Projekte/_Über diesen Ordner.md",
+      "target": "08 Vorlagen/Vorlage Projekt.md"
+    },
+    {
+      "source": "03 Wissen/Bauanleitung.md",
+      "target": "09 Wiki/_SCHEMA.md"
+    },
+    {
+      "source": "03 Wissen/Bauanleitung.md",
+      "target": "INDEX.md"
+    },
+    {
+      "source": "03 Wissen/Bauanleitung.md",
+      "target": "08 Vorlagen/Prompt-Vorlagen für Claude Code.md"
+    },
+    {
+      "source": "03 Wissen/Bauanleitung.md",
+      "target": "Start hier.md"
+    },
+    {
+      "source": "03 Wissen/Konnektoren-Demo.md",
+      "target": "03 Wissen/Bauanleitung.md"
+    },
+    {
+      "source": "04 Personen/_Über diesen Ordner.md",
+      "target": "08 Vorlagen/Vorlage Person.md"
+    },
+    {
+      "source": "05 Quellen/_Über diesen Ordner.md",
+      "target": "09 Wiki/_SCHEMA.md"
+    },
+    {
+      "source": "05 Quellen/_Über diesen Ordner.md",
+      "target": "08 Vorlagen/Prompt-Vorlagen für Claude Code.md"
+    },
+    {
+      "source": "07 Konnektoren/Claude.md",
+      "target": "03 Wissen/Konnektoren-Demo.md"
+    },
+    {
+      "source": "07 Konnektoren/GitHub.md",
+      "target": "03 Wissen/Konnektoren-Demo.md"
+    },
+    {
+      "source": "07 Konnektoren/GitHub.md",
+      "target": "README.md"
+    },
+    {
+      "source": "07 Konnektoren/Wikipedia.md",
+      "target": "03 Wissen/Konnektoren-Demo.md"
+    },
+    {
+      "source": "07 Konnektoren/YouTube.md",
+      "target": "03 Wissen/Konnektoren-Demo.md"
+    },
+    {
+      "source": "08 Vorlagen/Prompt-Vorlagen für Claude Code.md",
+      "target": "03 Wissen/Bauanleitung.md"
+    },
+    {
+      "source": "09 Wiki/log.md",
+      "target": "09 Wiki/_SCHEMA.md"
+    },
+    {
+      "source": "Start hier.md",
+      "target": "03 Wissen/Bauanleitung.md"
+    },
+    {
+      "source": "Start hier.md",
+      "target": "08 Vorlagen/Vorlage Daily Note.md"
+    },
+    {
+      "source": "Start hier.md",
+      "target": "09 Wiki/_SCHEMA.md"
+    },
+    {
+      "source": "Start hier.md",
+      "target": "INDEX.md"
+    },
+    {
+      "source": "Start hier.md",
+      "target": "03 Wissen/Konnektoren-Demo.md"
+    }
+  ],
+  "unaufgeloest": [],
+  "connectoren": [
+    {
+      "id": "claude",
+      "name": "Claude",
+      "farbe": "#d97757",
+      "bild": "",
+      "anzahl": 1
+    },
+    {
+      "id": "github",
+      "name": "GitHub",
+      "farbe": "#a0b3c6",
+      "bild": "",
+      "anzahl": 2
+    },
+    {
+      "id": "youtube",
+      "name": "YouTube",
+      "farbe": "#ff4444",
+      "bild": "",
+      "anzahl": 1
+    },
+    {
+      "id": "wikipedia",
+      "name": "Wikipedia",
+      "farbe": "#e8e8e8",
+      "bild": "",
+      "anzahl": 1
+    }
+  ]
+}
