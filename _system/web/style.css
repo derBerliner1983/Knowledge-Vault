@@ -30,6 +30,7 @@ html, body {
   display: flex; justify-content: space-between; align-items: center;
   padding: 14px 20px;
   pointer-events: none;
+  z-index: 16; /* Such-Dropdown liegt über der Ansichten-Leiste */
 }
 #topbar > * { pointer-events: auto; }
 
@@ -46,14 +47,43 @@ html, body {
 #brand h1 em { font-style: normal; color: var(--accent); }
 #stats { color: var(--text-dim); font-size: 12px; margin-left: 8px; letter-spacing: 0.04em; }
 
-#controls { display: flex; gap: 8px; }
+#controls { display: flex; gap: 8px; align-items: flex-start; }
+#suchbox { position: relative; }
+#suchzeile { display: flex; gap: 6px; }
 #search {
-  width: 260px; padding: 8px 12px;
+  width: 240px; padding: 8px 12px;
   background: var(--panel); color: var(--text);
   border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px;
   outline: none; backdrop-filter: blur(8px);
 }
 #search:focus { border-color: var(--accent); box-shadow: 0 0 14px rgba(255, 154, 31, 0.25); }
+#such-art {
+  padding: 8px 8px; border-radius: 8px;
+  background: var(--panel); color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+#such-ergebnisse {
+  position: absolute; top: 42px; left: 0; right: 0;
+  max-height: 60vh; overflow-y: auto;
+  background: #0b0c10; border: 1px solid var(--panel-border);
+  border-radius: 10px; padding: 6px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7);
+  z-index: 15;
+}
+#such-ergebnisse.hidden { display: none; }
+#such-ergebnisse .eintrag {
+  padding: 8px 10px; border-radius: 8px; cursor: pointer;
+}
+#such-ergebnisse .eintrag:hover { background: rgba(255, 154, 31, 0.10); }
+#such-ergebnisse .eintrag b { font-size: 13px; }
+#such-ergebnisse .eintrag .pfad { font-size: 11px; color: var(--text-dim); word-break: break-all; }
+#such-ergebnisse .eintrag .schnipsel {
+  font-size: 12px; color: var(--text-dim); margin-top: 2px;
+}
+#such-ergebnisse .eintrag .schnipsel mark {
+  background: none; color: var(--accent); font-weight: 600;
+}
+#such-ergebnisse .leer { padding: 10px; font-size: 12px; color: var(--text-dim); }
 #reindex, .button {
   padding: 8px 12px; border-radius: 8px; cursor: pointer;
   background: var(--panel); color: var(--text);

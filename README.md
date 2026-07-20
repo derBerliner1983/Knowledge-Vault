@@ -66,10 +66,18 @@ node _system/server.js --port 8080
 
 Die Referenz-Frames aus dem Video liegen in `_system/design-referenz/`.
 
-In jeder Ansicht: Suchen (oben rechts — Titel, Tags, Pfad), Cluster per
-Leiste unten ein-/ausblenden (im Nebel: Cluster wählen), Knoten anklicken
-für Details und **„In Obsidian öffnen"**, Knopf **„Neu indexieren"** liest
-den Vault frisch ein. Beenden mit `Strg+C`.
+In jeder Ansicht: Suchen (oben rechts), Cluster per Leiste unten
+ein-/ausblenden (im Nebel: Cluster wählen), Knoten anklicken für Details
+und **„In Obsidian öffnen"**, Knopf **„Neu indexieren"** liest den Vault
+frisch ein. Beenden mit `Strg+C`.
+
+**Suche:** Das Suchfeld filtert live den Graph (Titel, Tags, Pfad) und
+durchsucht gleichzeitig den **Inhalt aller Notizen** — Treffer erscheinen
+als Liste mit Fundstellen-Ausschnitten, ein Klick springt zur Notiz im
+Graph. Der Umschalter daneben wählt die Suchart: **exakt** (Volltext) oder
+**Bedeutung** — letzteres nutzt [qmd](https://github.com/tobi/qmd), falls
+installiert (findet auch Notizen, die das gesuchte Wort gar nicht
+enthalten); ohne qmd erscheint ein Hinweis mit den Einrichtungsschritten.
 
 **Live:** Der Server überwacht den Vault. Legst du in Obsidian eine Notiz an
 (oder änderst eine), wird automatisch neu indexiert und die Graph-Ansicht

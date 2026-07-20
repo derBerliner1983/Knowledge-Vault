@@ -33,6 +33,97 @@ function antworte(res, status, daten) {
   res.end(JSON.stringify(daten));
 }
 
+// --- Inhalts-Suche -------------------------------------------------------------
+
+function alleNotizen() {
+  const out = [];
+  const gehe = (dir, rel) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (e.name.startsWith(".")) continue;
+      const r = rel ? rel + "/" + e.name : e.name;
+      if (e.isDirectory()) {
+        if (!IGNORIEREN.includes(e.name)) gehe(path.join(dir, e.name), r);
+      } else if (e.name.toLowerCase().endsWith(".md")) {
+        out.push(r);
+      }
+    }
+  };
+  gehe(VAULT_ROOT, "");
+  return out;
+}
+
+/** Volltextsuche: alle Suchwörter müssen vorkommen; liefert Fundstellen-Ausschnitte. */
+function sucheExakt(q) {
+  const woerter = q.toLowerCase().split(/\s+/).filter(Boolean);
+  const treffer = [];
+  for (const rel of alleNotizen()) {
+    let text;
+    try { text = fs.readFileSync(path.join(VAULT_ROOT, rel), "utf8"); } catch { continue; }
+    const klein = text.toLowerCase();
+    if (!woerter.every((w) => klein.includes(w))) continue;
+
+    const zeilen = text.split(/\r?\n/);
+    const fundstellen = [];
+    let punkte = 0;
+    for (const w of woerter) {
+      punkte += klein.split(w).length - 1;
+      if (path.basename(rel).toLowerCase().includes(w)) punkte += 25;
+    }
+    for (let i = 0; i < zeilen.length && fundstellen.length < 3; i++) {
+      const zk = zeilen[i].toLowerCase();
+      if (woerter.some((w) => zk.includes(w))) {
+        const schnipsel = zeilen[i].trim().slice(0, 220);
+        if (schnipsel && !schnipsel.startsWith("---")) fundstellen.push(schnipsel);
+      }
+    }
+    treffer.push({ datei: rel, punkte, fundstellen });
+  }
+  treffer.sort((a, b) => b.punkte - a.punkte);
+  return treffer.slice(0, 20);
+}
+
+/** Bedeutungssuche über qmd (github.com/tobi/qmd), falls installiert. */
+let qmdDa = null;
+function sucheBedeutung(q) {
+  if (qmdDa === null) {
+    qmdDa = spawnSync("qmd", ["--help"], { encoding: "utf8", timeout: 10000 }).status === 0;
+  }
+  if (!qmdDa) {
+    return {
+      treffer: [], verfuegbar: false,
+      hinweis: "qmd ist nicht installiert. Einrichtung: github.com/tobi/qmd — danach: qmd collection add <Vault-Pfad> && qmd embed",
+    };
+  }
+  const r = spawnSync("qmd", ["query", q, "-n", "10"], {
+    cwd: VAULT_ROOT, encoding: "utf8", timeout: 120000,
+  });
+  if (r.status !== 0) {
+    return { treffer: [], verfuegbar: true, hinweis: `qmd meldet: ${(r.stderr || r.stdout || "Fehler").trim().slice(0, 300)}` };
+  }
+  // Ausgabe robust parsen: Zeilen mit einem .md-Pfad werden zu Treffern.
+  // Pfade können Leerzeichen enthalten (z. B. "03 Wissen/…"), deshalb zuerst
+  // nach zitierten Pfaden suchen und dann gegen die echte Notizliste abgleichen.
+  const bekannte = alleNotizen();
+  const treffer = [];
+  const gesehen = new Set();
+  for (const zeile of (r.stdout || "").split(/\r?\n/)) {
+    const m = zeile.match(/"([^"]+\.md)"/i) || zeile.match(/'([^']+\.md)'/i) || zeile.match(/([^\s"']+\.md)/i);
+    if (!m) continue;
+    let rel = m[1].replace(/\\/g, "/").replace(/^\.\//, "");
+    if (!fs.existsSync(path.join(VAULT_ROOT, rel))) {
+      const hit = bekannte.find((n) => n === rel || n.endsWith("/" + rel) || rel.endsWith("/" + n) || n.endsWith(rel));
+      if (!hit) continue;
+      rel = hit;
+    }
+    if (gesehen.has(rel)) continue;
+    gesehen.add(rel);
+    const rest = zeile.replace(m[0], "").trim().slice(0, 220);
+    treffer.push({ datei: rel, fundstellen: rest ? [rest] : [] });
+    if (treffer.length >= 10) break;
+  }
+  return { treffer, verfuegbar: true };
+}
+
 /** Validierung der GUI-Konfiguration. Gibt eine Liste deutscher Fehlermeldungen zurück. */
 function pruefeConfig(cfg) {
   const fehler = [];
@@ -120,6 +211,18 @@ const server = http.createServer(async (req, res) => {
 
   if (url.pathname === "/api/version") {
     antworte(res, 200, { version });
+    return;
+  }
+
+  // Inhalts-Suche: exakt (Volltext mit Fundstellen) oder bedeutung (qmd)
+  if (url.pathname === "/api/suche") {
+    const q = (url.searchParams.get("q") || "").trim();
+    const art = url.searchParams.get("art") || "exakt";
+    if (q.length < 2) { antworte(res, 200, { treffer: [] }); return; }
+    try {
+      if (art === "bedeutung") { antworte(res, 200, sucheBedeutung(q)); return; }
+      antworte(res, 200, { treffer: sucheExakt(q) });
+    } catch (err) { antworte(res, 500, { fehler: err.message }); }
     return;
   }
 

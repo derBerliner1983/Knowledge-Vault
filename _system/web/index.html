@@ -17,7 +17,16 @@
       <span id="stats"></span>
     </div>
     <div id="controls">
-      <input id="search" type="search" placeholder="Suchen … (Titel, Tag, Pfad)" autocomplete="off">
+      <div id="suchbox">
+        <div id="suchzeile">
+          <input id="search" type="search" placeholder="Suchen … (auch im Inhalt)" autocomplete="off">
+          <select id="such-art" title="exakt = Volltext · Bedeutung = qmd-Suche">
+            <option value="exakt">exakt</option>
+            <option value="bedeutung">Bedeutung</option>
+          </select>
+        </div>
+        <div id="such-ergebnisse" class="hidden"></div>
+      </div>
       <button id="reindex" title="Vault neu einlesen">⟳ Neu indexieren</button>
       <button id="automat-btn" title="Regeln, Aufträge und LLM-Status">⚙ Automat</button>
     </div>

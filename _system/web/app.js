@@ -783,10 +783,89 @@ function updatePanel() {
 
 document.getElementById("panel-close").onclick = () => { selected = null; updatePanel(); draw(); };
 
-document.getElementById("search").addEventListener("input", (ev) => {
+// --- Inhalts-Suche: Volltext (Server) bzw. Bedeutung (qmd) ---------------------
+
+const suchFeld = document.getElementById("search");
+const suchArt = document.getElementById("such-art");
+const suchListe = document.getElementById("such-ergebnisse");
+let suchTimer = null;
+
+function fokusAufNotiz(id) {
+  const n = nodes.find((x) => x.id === id);
+  if (!n) return;
+  selected = n;
+  if (mode === "radial") layoutRadial();
+  if (mode === "nebel") { nebelCluster = n.cluster; layoutNebel(); }
+  updatePanel();
+  // Ansicht auf den Knoten zentrieren (nur wo feste Weltkoordinaten existieren)
+  const ziel = mode === "wolken" ? { x: n.x, y: n.y }
+    : mode === "saeulen" ? { x: n.colX, y: n.colY }
+    : mode === "radial" ? { x: n.radX, y: n.radY }
+    : mode === "nebel" ? { x: n.nebX, y: n.nebY } : null;
+  if (ziel && ziel.x != null) {
+    const k = Math.max(transform.k, 1.4);
+    const t = d3.zoomIdentity.translate(-ziel.x * k, -ziel.y * k).scale(k);
+    d3.select(canvas).call(zoom.transform, t);
+  }
+  draw();
+}
+
+function markiere(text, woerter) {
+  let sicher = text.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  for (const w of woerter) {
+    if (w.length < 2) continue;
+    sicher = sicher.replace(new RegExp(`(${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi"), "<mark>$1</mark>");
+  }
+  return sicher;
+}
+
+async function inhaltsSuche() {
+  const q = suchFeld.value.trim();
+  if (q.length < 2) { suchListe.classList.add("hidden"); return; }
+  try {
+    const res = await (await fetch(`/api/suche?q=${encodeURIComponent(q)}&art=${suchArt.value}`)).json();
+    suchListe.innerHTML = "";
+    if (res.hinweis) {
+      const p = document.createElement("div");
+      p.className = "leer";
+      p.textContent = res.hinweis;
+      suchListe.append(p);
+    }
+    const titelVon = new Map(nodes.map((n) => [n.id, n.title]));
+    const woerter = q.split(/\s+/);
+    for (const t of res.treffer || []) {
+      const e = document.createElement("div");
+      e.className = "eintrag";
+      e.innerHTML =
+        `<b>${(titelVon.get(t.datei) || t.datei.split("/").pop().replace(/\.md$/, ""))
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;")}</b>` +
+        `<div class="pfad">${t.datei.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</div>` +
+        (t.fundstellen || []).map((f) => `<div class="schnipsel">${markiere(f, woerter)}</div>`).join("");
+      e.onclick = () => { suchListe.classList.add("hidden"); fokusAufNotiz(t.datei); };
+      suchListe.append(e);
+    }
+    if (!(res.treffer || []).length && !res.hinweis) {
+      suchListe.innerHTML = `<div class="leer">Keine Treffer im Inhalt.</div>`;
+    }
+    suchListe.classList.remove("hidden");
+  } catch {}
+}
+
+suchFeld.addEventListener("input", (ev) => {
   searchTerm = ev.target.value.trim();
   if (mode === "radial") layoutRadial();
   draw();
+  clearTimeout(suchTimer);
+  if (searchTerm.length < 2) { suchListe.classList.add("hidden"); return; }
+  suchTimer = setTimeout(inhaltsSuche, 350);
+});
+suchFeld.addEventListener("keydown", (ev) => {
+  if (ev.key === "Enter") { clearTimeout(suchTimer); inhaltsSuche(); }
+  if (ev.key === "Escape") suchListe.classList.add("hidden");
+});
+suchArt.addEventListener("change", () => { if (suchFeld.value.trim().length >= 2) inhaltsSuche(); });
+document.addEventListener("click", (ev) => {
+  if (!document.getElementById("suchbox").contains(ev.target)) suchListe.classList.add("hidden");
 });
 
 document.getElementById("reindex").onclick = async () => {
