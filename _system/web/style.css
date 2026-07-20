@@ -210,6 +210,13 @@ html, body {
 #bericht .bericht-notiz { color: var(--text); text-decoration: none; }
 #bericht .bericht-notiz:hover { color: var(--accent); }
 
+/* Anmeldung & MFA */
+.qr-box { margin: 12px 0; background: #fff; display: inline-block; border-radius: 8px; padding: 6px; }
+.qr-box svg { display: block; }
+#mfa-bereich details { margin-top: 10px; }
+#mfa-bereich summary { cursor: pointer; font-size: 12px; }
+#mfa-bereich input { max-width: 220px; }
+
 /* Vorschläge-Posteingang */
 .vorschlag {
   border: 1px solid rgba(255, 255, 255, 0.10); border-radius: 10px;

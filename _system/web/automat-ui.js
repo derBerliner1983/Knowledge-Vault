@@ -45,6 +45,120 @@
     ladeUndoListe();
     ladeLog();
     pruefeUpdate();
+    ladeMFA();
+  }
+
+  // --- Anmeldung & MFA ----------------------------------------------------------
+
+  async function ladeMFA() {
+    const el = document.getElementById("mfa-bereich");
+    try {
+      const s = await (await fetch("/api/sicherheit")).json();
+      el.innerHTML = "";
+      if (!s.aktiv) {
+        const p = document.createElement("p");
+        p.className = "dim";
+        p.textContent = "Ohne Schutz kann jeder im Netz (bei aktivem Heimnetz/VPN) auf dein Gehirn zugreifen. " +
+          "Einrichten: Passwort wählen, QR-Code mit einer Authenticator-App scannen (Google Authenticator, Aegis, 2FAS …), Code bestätigen.";
+        const pw = document.createElement("input");
+        pw.type = "password"; pw.placeholder = "Neues Passwort (mind. 8 Zeichen)";
+        const knopf = document.createElement("button");
+        knopf.className = "primaer";
+        knopf.textContent = "🔒 Schutz einrichten";
+        const ziel = document.createElement("div");
+        knopf.onclick = async () => {
+          knopf.disabled = true;
+          try {
+            const res = await (await fetch("/api/sicherheit/einrichten", {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ passwort: pw.value }),
+            })).json();
+            if (res.fehler) { ziel.innerHTML = `<span class="schlecht">✗ ${res.fehler}</span>`; return; }
+            ziel.innerHTML = "";
+            const qrBox = document.createElement("div");
+            qrBox.className = "qr-box";
+            try {
+              const qr = qrcode(0, "M");
+              qr.addData(res.otpauth);
+              qr.make();
+              qrBox.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2 });
+            } catch { qrBox.textContent = "QR nicht darstellbar — Schlüssel von Hand eintragen:"; }
+            const schluessel = document.createElement("p");
+            schluessel.className = "dim";
+            schluessel.textContent = `Schlüssel (falls Scannen nicht geht): ${res.secret}`;
+            const code = document.createElement("input");
+            code.type = "text"; code.placeholder = "6-stelliger Code aus der App"; code.maxLength = 6;
+            const ok = document.createElement("button");
+            ok.className = "primaer";
+            ok.textContent = "✓ Code bestätigen & aktivieren";
+            const meldung = document.createElement("span");
+            meldung.className = "dim";
+            ok.onclick = async () => {
+              ok.disabled = true;
+              const r = await (await fetch("/api/sicherheit/bestaetigen", {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code: code.value }),
+              })).json();
+              if (r.fehler) { meldung.textContent = "✗ " + r.fehler; meldung.className = "schlecht"; ok.disabled = false; return; }
+              ladeMFA();
+            };
+            const reihe = document.createElement("div");
+            reihe.className = "reihe";
+            reihe.append(code, ok, meldung);
+            ziel.append(qrBox, schluessel, reihe);
+          } finally { knopf.disabled = false; }
+        };
+        const reihe = document.createElement("div");
+        reihe.className = "reihe";
+        reihe.append(pw, knopf);
+        el.append(p, reihe, ziel);
+        return;
+      }
+
+      // Schutz aktiv: Geräte-Liste + Verwaltung
+      const info = document.createElement("p");
+      info.innerHTML = `<span class="gut">✓ Schutz aktiv</span> <span class="dim">— neue Geräte müssen Passwort + Einmalcode eingeben. ` +
+        `Notfall: Datei _system/.sicherheit.json am Rechner löschen setzt den Schutz zurück.</span>`;
+      el.append(info);
+      for (const g of s.geraete || []) {
+        const zeile = document.createElement("div");
+        zeile.className = "regel";
+        const t = document.createElement("div");
+        t.innerHTML = `<b>${g.geraet.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</b><br><span class="dim">angemeldet seit ${g.erstellt}</span>`;
+        const weg = document.createElement("button");
+        weg.textContent = "Abmelden";
+        weg.onclick = async () => {
+          await fetch("/api/sicherheit/geraet-abmelden", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ kennung: g.kennung }),
+          });
+          ladeMFA();
+        };
+        zeile.append(t, weg);
+        el.append(zeile);
+      }
+      const aus = document.createElement("details");
+      aus.innerHTML = `<summary class="dim">Schutz abschalten …</summary>`;
+      const pw2 = document.createElement("input");
+      pw2.type = "password"; pw2.placeholder = "Passwort";
+      const code2 = document.createElement("input");
+      code2.type = "text"; code2.placeholder = "Einmalcode"; code2.maxLength = 6;
+      const weg2 = document.createElement("button");
+      weg2.textContent = "Schutz deaktivieren";
+      weg2.onclick = async () => {
+        const r = await (await fetch("/api/sicherheit/deaktivieren", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ passwort: pw2.value, code: code2.value }),
+        })).json();
+        if (r.fehler) alert("✗ " + r.fehler);
+        ladeMFA();
+      };
+      const reihe2 = document.createElement("div");
+      reihe2.className = "reihe";
+      reihe2.append(pw2, code2, weg2);
+      aus.append(reihe2);
+      el.append(aus);
+    } catch (err) { el.textContent = err.message; }
   }
 
   // --- Update aus git ----------------------------------------------------------

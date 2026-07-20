@@ -11,6 +11,7 @@ const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
 const automat = require("./automat.js");
+const sicherheit = require("./sicherheit.js");
 
 const WEB_ROOT = path.join(__dirname, "web");
 const GRAPH_JSON = path.join(__dirname, "graph.json");
@@ -252,8 +253,105 @@ function starteUeberwachung() {
   }
 }
 
+function leseCookie(req, name) {
+  const roh = req.headers.cookie || "";
+  for (const teil of roh.split(";")) {
+    const [k, ...v] = teil.trim().split("=");
+    if (k === name) return v.join("=");
+  }
+  return null;
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
+
+  // --- Anmeldung & MFA: alles außer der Login-Seite braucht eine Geräte-Session
+  const offeneWege = new Set(["/login.html", "/api/login", "/favicon.ico"]);
+  if (sicherheit.aktiv() && !offeneWege.has(url.pathname)) {
+    if (!sicherheit.sessionGueltig(leseCookie(req, "zg_session"))) {
+      if (url.pathname.startsWith("/api/") || url.pathname === "/graph.json") {
+        antworte(res, 401, { fehler: "Nicht angemeldet.", login: true });
+      } else {
+        res.writeHead(302, { Location: "/login.html" });
+        res.end();
+      }
+      return;
+    }
+  }
+
+  if (url.pathname === "/api/login" && req.method === "POST") {
+    try {
+      const { passwort, code, geraet } = await leseBody(req);
+      const ua = (req.headers["user-agent"] || "").slice(0, 60);
+      const token = sicherheit.anmelden(passwort, code, geraet || ua);
+      res.writeHead(200, {
+        "Content-Type": "application/json; charset=utf-8",
+        "Set-Cookie": `zg_session=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${180 * 86400}`,
+      });
+      res.end(JSON.stringify({ ok: true }));
+    } catch (err) { antworte(res, 401, { fehler: err.message }); }
+    return;
+  }
+
+  if (url.pathname === "/api/logout" && req.method === "POST") {
+    const token = leseCookie(req, "zg_session");
+    if (token) sicherheit.geraetAbmelden(token.slice(0, 8));
+    res.writeHead(200, {
+      "Content-Type": "application/json; charset=utf-8",
+      "Set-Cookie": "zg_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0",
+    });
+    res.end(JSON.stringify({ ok: true }));
+    return;
+  }
+
+  if (url.pathname === "/api/sicherheit" && req.method === "GET") {
+    antworte(res, 200, { aktiv: sicherheit.aktiv(), geraete: sicherheit.aktiv() ? sicherheit.geraete() : [] });
+    return;
+  }
+  if (url.pathname === "/api/sicherheit/einrichten" && req.method === "POST") {
+    try {
+      const { passwort } = await leseBody(req);
+      antworte(res, 200, sicherheit.einrichten(passwort));
+    } catch (err) { antworte(res, 400, { fehler: err.message }); }
+    return;
+  }
+  if (url.pathname === "/api/sicherheit/bestaetigen" && req.method === "POST") {
+    try {
+      const { code } = await leseBody(req);
+      sicherheit.bestaetigen(code);
+      // Das einrichtende Gerät gleich anmelden, sonst sperrt man sich selbst aus
+      const token = require("crypto").randomBytes(32).toString("hex");
+      const d = JSON.parse(fs.readFileSync(path.join(__dirname, ".sicherheit.json"), "utf8"));
+      d.sessions[token] = {
+        geraet: "Einrichtungs-Gerät",
+        erstellt: new Date().toISOString().slice(0, 16).replace("T", " "),
+        zuletzt: Date.now(),
+      };
+      fs.writeFileSync(path.join(__dirname, ".sicherheit.json"), JSON.stringify(d, null, 2));
+      res.writeHead(200, {
+        "Content-Type": "application/json; charset=utf-8",
+        "Set-Cookie": `zg_session=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${180 * 86400}`,
+      });
+      res.end(JSON.stringify({ ok: true }));
+    } catch (err) { antworte(res, 400, { fehler: err.message }); }
+    return;
+  }
+  if (url.pathname === "/api/sicherheit/geraet-abmelden" && req.method === "POST") {
+    try {
+      const { kennung } = await leseBody(req);
+      sicherheit.geraetAbmelden(String(kennung || ""));
+      antworte(res, 200, { ok: true, geraete: sicherheit.geraete() });
+    } catch (err) { antworte(res, 400, { fehler: err.message }); }
+    return;
+  }
+  if (url.pathname === "/api/sicherheit/deaktivieren" && req.method === "POST") {
+    try {
+      const { passwort, code } = await leseBody(req);
+      sicherheit.deaktivieren(passwort, code);
+      antworte(res, 200, { ok: true });
+    } catch (err) { antworte(res, 400, { fehler: err.message }); }
+    return;
+  }
 
   if (url.pathname === "/api/reindex") {
     const r = reindex();

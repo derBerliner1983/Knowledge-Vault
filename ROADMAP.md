@@ -30,6 +30,13 @@ Wahrheit, die KI schlägt vor, der Mensch entscheidet.
 | Obsidian-Plugin | Liegt im Vault (`.obsidian/plugins/zweites-gehirn/`): Graph-Ansicht als Tab in Obsidian, Ribbon-Icon 🧠, Befehl, einstellbare Server-Adresse |
 | 💬 Chat | Gespräch mit dem Vault übers lokale LLM — Suchleiter-Kontext (INDEX + Top-3-Notizen), antwortet nur daraus, klickbare Quellenangaben |
 | Von unterwegs | VPN-Anleitung im README (Tailscale / Fritz!Box-WireGuard) — sicher, ohne Portfreigabe und ohne eigenes Login-System |
+| Anmeldung & MFA | Passwort + TOTP-Authenticator, Geräte-Sessions (180 Tage), neues Gerät = neue MFA, Geräte-Verwaltung im ⚙-Tab, Anmelde-Bremse |
+
+## 🔨 In Arbeit (beauftragt)
+
+1. Konnektoren Stufe A: GUI-definierte Dienste (Bild, Farbe, Domain-Muster), Link-Erkennung im Indexer, Graph-Satelliten, Übersichts-MD je Konnektor
+2. Geteilte Claude-Chats importieren (nur von dir geteilte Links → Ablage in `05 Quellen`)
+3. Konnektoren Stufe B: GitHub-Anreicherung (Titel/Status), Auto-Titel/Favicon für neue Links |
 
 ## 📋 Backlog
 

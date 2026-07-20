@@ -234,6 +234,23 @@ betroffen sind, zeigt die GUI an, dass der Server einmal neu gestartet
 werden muss. Zusätzlich prüft der Server täglich im Hintergrund und legt
 bei neuen Versionen einen Hinweis in den Posteingang.
 
+## Anmeldung & MFA (empfohlen vor Heimnetz/VPN)
+
+Im ⚙-Tab unter **Anmeldung & MFA**: Passwort wählen, den QR-Code mit einer
+Authenticator-App scannen (Google Authenticator, Aegis, 2FAS, Microsoft
+Authenticator — Standard-TOTP), Code bestätigen — fertig. Ab dann gilt:
+
+- **Neues Gerät** (Browser ohne gemerkte Sitzung) → Login-Seite mit
+  Passwort **und** Einmalcode.
+- **Bekanntes Gerät** wird 180 Tage gemerkt und kommt direkt rein.
+- Im ⚙-Tab siehst du alle angemeldeten Geräte und kannst jedes einzeln
+  **abmelden** (dann verlangt es beim nächsten Mal wieder MFA).
+- Nach fünf Fehlversuchen bremst der Server Anmeldeversuche aus.
+- **Notfall** (Passwort/Handy weg): am Rechner die Datei
+  `_system/.sicherheit.json` löschen — der Schutz ist zurückgesetzt und
+  kann neu eingerichtet werden. (Die Datei ist bewusst lokal und wird
+  nicht gesynct; auf dem zweiten PC einmal separat einrichten.)
+
 ## Vom Handy oder Tablet aus (Heimnetz)
 
 Im ⚙-Tab unter **Server** den Haken **„Im Heimnetz erreichbar machen"**
