@@ -195,6 +195,21 @@ html, body {
   max-height: 180px; overflow-y: auto;
 }
 
+/* Aufräum-Bericht */
+#bericht h4 {
+  font-size: 12px; margin: 12px 0 4px; color: var(--text);
+}
+#bericht h4.gut { color: #52e94a; }
+#bericht h4.gut::after { content: " ✓"; }
+#bericht .bericht-gruppe {
+  font-size: 12px; color: var(--text-dim);
+  border-left: 2px solid rgba(255, 255, 255, 0.10);
+  padding-left: 10px; margin-bottom: 6px;
+}
+#bericht .bericht-gruppe > div { padding: 2px 0; }
+#bericht .bericht-notiz { color: var(--text); text-decoration: none; }
+#bericht .bericht-notiz:hover { color: var(--accent); }
+
 /* Einfache Zeilen-Listen (Undo-Verlauf) */
 .regel {
   display: flex; justify-content: space-between; align-items: center; gap: 10px;

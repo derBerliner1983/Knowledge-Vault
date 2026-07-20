@@ -351,6 +351,49 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Aufräum-Bericht — deterministisch, ohne LLM
+  if (url.pathname === "/api/bericht") {
+    try {
+      reindex();
+      const g = JSON.parse(fs.readFileSync(GRAPH_JSON, "utf8"));
+      const grad = new Map(g.nodes.map((n) => [n.id, 0]));
+      for (const e of g.edges) {
+        grad.set(e.source, (grad.get(e.source) || 0) + 1);
+        grad.set(e.target, (grad.get(e.target) || 0) + 1);
+      }
+      const waisen = g.nodes
+        .filter((n) => !grad.get(n.id) && !path.basename(n.id).startsWith("_") && n.cluster !== "Wurzel")
+        .map((n) => n.id);
+      const ohneTags = g.nodes
+        .filter((n) => (!n.tags || !n.tags.length) && n.cluster !== "Wurzel" && !path.basename(n.id).startsWith("_"))
+        .map((n) => n.id);
+      const proName = new Map();
+      for (const n of g.nodes) {
+        const basis = path.basename(n.id, ".md").toLowerCase().replace(/ \(\d+\)$/, "");
+        if (basis.startsWith("_")) continue; // Ordnernotizen wie _Über … sind gewollt mehrfach
+        if (!proName.has(basis)) proName.set(basis, []);
+        proName.get(basis).push(n.id);
+      }
+      const duplikate = [...proName.values()].filter((liste) => liste.length > 1);
+      const inboxAlt = [];
+      const inboxDir = path.join(VAULT_ROOT, "00 Inbox");
+      if (fs.existsSync(inboxDir)) {
+        for (const name of fs.readdirSync(inboxDir)) {
+          if (!name.toLowerCase().endsWith(".md") || name.startsWith("_")) continue;
+          const tage = Math.floor((Date.now() - fs.statSync(path.join(inboxDir, name)).mtimeMs) / 86400000);
+          if (tage >= 14) inboxAlt.push({ datei: "00 Inbox/" + name, tage });
+        }
+        inboxAlt.sort((a, b) => b.tage - a.tage);
+      }
+      antworte(res, 200, {
+        kaputteLinks: g.unaufgeloest || [],
+        waisen, ohneTags, duplikate, inboxAlt,
+        stand: new Date().toISOString().slice(0, 16).replace("T", " "),
+      });
+    } catch (err) { antworte(res, 500, { fehler: err.message }); }
+    return;
+  }
+
   // Undo-Verlauf lesen / rückgängig machen
   if (url.pathname === "/api/undo" && req.method === "GET") {
     try {

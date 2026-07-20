@@ -1,7 +1,7 @@
 {
   "meta": {
     "vaultName": "Knowledge-Vault",
-    "generatedAt": "2026-07-20T04:51:31.551Z",
+    "generatedAt": "2026-07-20T04:55:22.651Z",
     "notes": 17,
     "edges": 15
   },
@@ -266,5 +266,6 @@
       "source": "Start hier.md",
       "target": "INDEX.md"
     }
-  ]
+  ],
+  "unaufgeloest": []
 }

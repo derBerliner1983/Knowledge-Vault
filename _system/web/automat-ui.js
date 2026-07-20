@@ -43,6 +43,67 @@
     ladeLog();
   }
 
+  // --- Aufräum-Bericht --------------------------------------------------------
+
+  document.getElementById("bericht-knopf").onclick = async () => {
+    const knopf = document.getElementById("bericht-knopf");
+    const ziel = document.getElementById("bericht");
+    knopf.disabled = true; knopf.textContent = "🧹 läuft …";
+    try {
+      const b = await (await fetch("/api/bericht")).json();
+      if (b.fehler) { ziel.innerHTML = `<span class="schlecht">✗ ${b.fehler}</span>`; return; }
+      ziel.innerHTML = "";
+      const notiz = (id, extra) => {
+        const a = document.createElement("a");
+        a.href = "#"; a.className = "bericht-notiz";
+        a.textContent = id + (extra || "");
+        a.onclick = (ev) => {
+          ev.preventDefault();
+          overlay.classList.add("hidden");
+          if (typeof fokusAufNotiz === "function") fokusAufNotiz(id);
+        };
+        return a;
+      };
+      const gruppe = (titel, eintraege, bauer) => {
+        const h = document.createElement("h4");
+        h.textContent = `${titel} (${eintraege.length})`;
+        h.className = eintraege.length ? "" : "gut";
+        ziel.append(h);
+        if (!eintraege.length) return;
+        const div = document.createElement("div");
+        div.className = "bericht-gruppe";
+        for (const e of eintraege.slice(0, 30)) div.append(bauer(e));
+        if (eintraege.length > 30) div.append(Object.assign(document.createElement("span"), { className: "dim", textContent: `… und ${eintraege.length - 30} weitere` }));
+        ziel.append(div);
+      };
+      gruppe("Kaputte Wikilinks", b.kaputteLinks, (k) => {
+        const zeile = document.createElement("div");
+        zeile.append(notiz(k.von), ` → [[${k.ziel}]] fehlt`);
+        return zeile;
+      });
+      gruppe("Verwaiste Notizen (keine Verknüpfungen)", b.waisen, (w) => {
+        const zeile = document.createElement("div"); zeile.append(notiz(w)); return zeile;
+      });
+      gruppe("Ohne Tags", b.ohneTags, (o) => {
+        const zeile = document.createElement("div"); zeile.append(notiz(o)); return zeile;
+      });
+      gruppe("Duplikat-Verdacht (gleicher Name)", b.duplikate, (d) => {
+        const zeile = document.createElement("div");
+        d.forEach((id, i) => { if (i) zeile.append(" ↔ "); zeile.append(notiz(id)); });
+        return zeile;
+      });
+      gruppe("Inbox älter als 14 Tage", b.inboxAlt, (a) => {
+        const zeile = document.createElement("div");
+        zeile.append(notiz(a.datei, ` — ${a.tage} Tage`));
+        return zeile;
+      });
+    } catch (err) {
+      ziel.innerHTML = `<span class="schlecht">✗ ${err.message}</span>`;
+    } finally {
+      knopf.disabled = false; knopf.textContent = "🧹 Bericht erstellen";
+    }
+  };
+
   // --- Undo-Verlauf ----------------------------------------------------------
 
   async function ladeUndoListe() {

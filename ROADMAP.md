@@ -21,13 +21,11 @@ Wahrheit, die KI schlägt vor, der Mensch entscheidet.
 | Inhalts-Suche | Volltext mit Fundstellen-Ausschnitten + qmd-Bedeutungssuche (falls installiert), Klick springt zum Knoten |
 | Notiz-Vorschau | Notiz gerendert im Panel (Tabellen, Code, Listen), klickbare Wikilinks — Lesen ohne App-Wechsel |
 | Undo | Jeder ausgeführte Aktionsplan im Verlauf, per „↩ Rückgängig" umkehrbar; entfernte Notizen landen im Papierkorb statt gelöscht zu werden |
+| Aufräum-Bericht | Ohne LLM, per Knopf: kaputte Wikilinks, verwaiste Notizen, Duplikat-Verdacht, Notizen ohne Tags, Inbox-Altbestand — Klick springt zur Notiz |
 
 ## 🔨 Als Nächstes (in dieser Reihenfolge)
 
-1. **Aufräum-Berichte (ohne LLM)** — deterministischer Bericht im ⚙-Tab:
-   kaputte Wikilinks, verwaiste Notizen, Duplikat-Verdacht, Notizen ohne
-   Tags, Altbestand in der Inbox.
-2. **Wiki-Ingest-Regel** — Quellen-Ordner `05 Quellen`; neue Quelle →
+1. **Wiki-Ingest-Regel** — Quellen-Ordner `05 Quellen`; neue Quelle →
    LLM entwirft eine Wiki-Seite nach `09 Wiki/_SCHEMA.md` samt
    Log-Eintrag (als Vorschlag; Regelvorlage liegt bei, standardmäßig aus).
 

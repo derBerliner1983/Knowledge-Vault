@@ -100,6 +100,11 @@ aktualisiert sich von selbst nach wenigen Sekunden — kein Knopfdruck nötig.
   Ausgeführt wird immer geprüft: nur `.md`-Dateien, nur innerhalb des
   Vaults, Systemordner sind tabu, nichts wird überschrieben.
 - **Regeln:** jede Crontab-Regel per **„▶ Jetzt"** sofort starten.
+- **Aufräum-Bericht (ohne LLM):** ein Knopf, kostenlos und deterministisch —
+  listet kaputte Wikilinks, verwaiste Notizen (keine Verknüpfungen),
+  Notizen ohne Tags, Duplikat-Verdacht (gleicher Dateiname) und
+  Inbox-Einträge, die älter als 14 Tage sind. Klick auf einen Eintrag
+  springt zur Notiz im Graph.
 - **Verlauf & Rückgängig:** Jeder ausgeführte Aktionsplan (Auftrag oder
   Regel) erscheint im Abschnitt „Verlauf" und lässt sich per
   **„↩ Rückgängig"** komplett umkehren — Verschobenes kommt zurück,
