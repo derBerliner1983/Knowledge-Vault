@@ -28,9 +28,24 @@
         <div id="such-ergebnisse" class="hidden"></div>
       </div>
       <button id="reindex" title="Vault neu einlesen">⟳ Neu indexieren</button>
+      <button id="chat-btn" title="Mit dem Vault reden (lokales LLM)">💬 Chat</button>
       <button id="automat-btn" title="Regeln, Aufträge und LLM-Status">⚙ Automat</button>
     </div>
   </header>
+
+  <div id="chat" class="hidden">
+    <div id="chat-card">
+      <button id="chat-close" title="Schließen">×</button>
+      <h2>💬 Mit dem Gehirn reden</h2>
+      <p class="dim">Antwortet nur aus deinen Notizen (lokales LLM, Suchleiter-Kontext) und nennt die Quellen.
+      Für tiefe Fragen über den ganzen Bestand bleibt Claude Code im Vault-Ordner die bessere Wahl.</p>
+      <div id="chat-verlauf"></div>
+      <div class="reihe">
+        <textarea id="chat-frage" rows="2" placeholder="z. B.: Was steht bei mir zur Wiki-Regel bei Widersprüchen?"></textarea>
+        <button id="chat-senden" class="primaer">Senden</button>
+      </div>
+    </div>
+  </div>
 
   <div id="automat" class="hidden">
     <div id="automat-card">
@@ -164,5 +179,6 @@
   <script src="vendor/d3.v7.min.js"></script>
   <script src="app.js"></script>
   <script src="automat-ui.js"></script>
+  <script src="chat-ui.js"></script>
 </body>
 </html>

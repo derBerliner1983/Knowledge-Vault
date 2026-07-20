@@ -212,6 +212,17 @@ OS-eigenen Scheduler nutzen — Eintrag z. B.:
 `*/15 * * * * cd /Pfad/zu/Knowledge-Vault && node _system/automat.js --einmal`
 (Windows: Aufgabenplanung mit demselben Befehl).
 
+## Mit dem Gehirn reden (💬 Chat)
+
+Der Knopf **💬 Chat** (oben rechts) öffnet ein Gespräch mit deinem Vault
+über das lokale LLM. Der Chat folgt der Brain-First-Suchleiter: Er bekommt
+den Katalog (INDEX.md) plus die drei besten Notizen zur Frage als Kontext,
+antwortet **nur daraus** und nennt am Ende die Quellen — ein Klick auf
+eine Quelle springt zur Notiz im Graph. Findet er nichts, sagt er das
+ehrlich, statt zu raten. Für tiefe Fragen über den ganzen Bestand
+(Widerspruchs-Abgleich, Umstrukturierung) bleibt Claude Code im
+Vault-Ordner die stärkere Wahl.
+
 ## Updates
 
 Im ⚙-Tab unter **Update** siehst du beim Öffnen automatisch, ob es auf

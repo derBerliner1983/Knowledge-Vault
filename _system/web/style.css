@@ -276,6 +276,63 @@ html, body {
 .regel-kopf button { flex-shrink: 0; }
 .regel-karte textarea { resize: vertical; }
 
+/* Chat-Overlay */
+#chat {
+  position: fixed; inset: 0; z-index: 20;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 48px 16px;
+}
+#chat.hidden { display: none; }
+#chat-card {
+  position: relative; display: flex; flex-direction: column;
+  width: min(640px, 100%); max-height: calc(100vh - 96px);
+  background: #0b0c10; border: 1px solid var(--panel-border);
+  border-radius: 14px; padding: 22px;
+  box-shadow: 0 0 60px rgba(255, 154, 31, 0.10);
+}
+#chat-card h2 { font-size: 17px; margin-bottom: 6px; color: #fff; }
+#chat-card > p { margin-bottom: 10px; }
+#chat-close {
+  position: absolute; top: 10px; right: 14px;
+  background: none; border: none; color: var(--text-dim);
+  font-size: 22px; cursor: pointer;
+}
+#chat-close:hover { color: var(--accent); }
+#chat-verlauf {
+  flex: 1; overflow-y: auto; min-height: 120px;
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 6px 2px; margin-bottom: 10px;
+}
+.chat-nachricht {
+  max-width: 88%; padding: 9px 12px; border-radius: 12px;
+  font-size: 13px; line-height: 1.55; white-space: pre-wrap; word-break: break-word;
+}
+.chat-nachricht.nutzer {
+  align-self: flex-end;
+  background: rgba(255, 154, 31, 0.14);
+  border: 1px solid rgba(255, 154, 31, 0.30);
+}
+.chat-nachricht.ki {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+.chat-nachricht .quellen { margin-top: 6px; font-size: 11px; color: var(--text-dim); }
+.chat-nachricht .quellen a { color: var(--accent); text-decoration: none; cursor: pointer; }
+#chat-frage {
+  flex: 1; padding: 9px 12px; resize: none;
+  background: rgba(255, 255, 255, 0.04); color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px;
+  font: inherit; outline: none;
+}
+#chat-frage:focus { border-color: var(--accent); }
+#chat-card button.primaer {
+  padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px;
+  background: rgba(255, 154, 31, 0.16); border: 1px solid var(--accent); color: #fff;
+}
+#chat-card button.primaer:disabled { opacity: 0.5; cursor: wait; }
+
 /* Rechte Seitenleiste: Ansichts-Umschalter + Detail-Panel (wie im Video) */
 #side {
   position: fixed; right: 16px; top: 64px;

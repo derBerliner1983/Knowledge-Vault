@@ -82,6 +82,43 @@ function sucheExakt(q) {
   return treffer.slice(0, 20);
 }
 
+/**
+ * Lockere Stichwort-Suche für den Chat: Stoppwörter raus, Wortstämme
+ * (Widersprüchen ≈ Widersprüche), ein Treffer-Wort reicht — sortiert
+ * nach Gewicht. Ganze Fragesätze finden so trotzdem die richtigen Notizen.
+ */
+const STOPPWOERTER = new Set(("was gilt bei im in der die das und oder ein eine einen zu mit von für auf ist sind war " +
+  "wie wo wann warum welche welcher welches mein meine meinem es den dem über aus an um nach vor hat hatte " +
+  "habe haben ich du er sie wir ihr steht stehen gibt kann können soll sollen muss wird werden auch noch dann").split(" "));
+
+function sucheFuerChat(frage) {
+  const staemme = [...new Set(
+    frage.toLowerCase().split(/[^\p{L}\p{N}-]+/u)
+      .filter((w) => w.length >= 3 && !STOPPWOERTER.has(w))
+      .map((w) => (w.length >= 6 ? w.replace(/(en|er|es|e|n|s)$/, "") : w))
+  )];
+  if (!staemme.length) return [];
+  // Software-Doku beantwortet keine Wissensfragen — raus aus dem Chat-Kontext
+  const ausgeschlossen = new Set(["README.md", "ROADMAP.md"]);
+  const treffer = [];
+  for (const rel of alleNotizen()) {
+    if (ausgeschlossen.has(rel)) continue;
+    let text;
+    try { text = fs.readFileSync(path.join(VAULT_ROOT, rel), "utf8").toLowerCase(); } catch { continue; }
+    let punkte = 0;
+    for (const s of staemme) {
+      const anz = text.split(s).length - 1;
+      if (anz) {
+        punkte += anz;
+        if (path.basename(rel).toLowerCase().includes(s)) punkte += 20;
+      }
+    }
+    // Dichte statt Masse: lange Dateien nicht allein wegen Länge bevorzugen
+    if (punkte) treffer.push({ datei: rel, punkte: punkte / Math.sqrt(text.length / 1000 + 1) });
+  }
+  return treffer.sort((a, b) => b.punkte - a.punkte);
+}
+
 /** Bedeutungssuche über qmd (github.com/tobi/qmd), falls installiert. */
 let qmdDa = null;
 function sucheBedeutung(q) {
@@ -410,6 +447,54 @@ const server = http.createServer(async (req, res) => {
         waisen, ohneTags, duplikate, inboxAlt,
         stand: new Date().toISOString().slice(0, 16).replace("T", " "),
       });
+    } catch (err) { antworte(res, 500, { fehler: err.message }); }
+    return;
+  }
+
+  // Chat mit dem lokalen LLM — geerdet über die Suchleiter:
+  // INDEX.md + die besten Volltext-Treffer zur Frage kommen als Kontext mit.
+  if (url.pathname === "/api/chat" && req.method === "POST") {
+    try {
+      const { frage, verlauf, modell } = await leseBody(req);
+      if (!frage || !frage.trim()) { antworte(res, 400, { fehler: "Keine Frage." }); return; }
+
+      const teile = [];
+      const idx = path.join(VAULT_ROOT, "INDEX.md");
+      if (fs.existsSync(idx)) teile.push("=== INDEX.md (Katalog) ===\n" + fs.readFileSync(idx, "utf8").slice(0, 2500));
+      const treffer = sucheFuerChat(frage).slice(0, 3);
+      const quellenDateien = [];
+      for (const t of treffer) {
+        try {
+          teile.push(`=== ${t.datei} ===\n` + fs.readFileSync(path.join(VAULT_ROOT, t.datei), "utf8").slice(0, 2500));
+          quellenDateien.push(t.datei);
+        } catch {}
+      }
+
+      const gespraech = (Array.isArray(verlauf) ? verlauf.slice(-8) : [])
+        .map((m) => `${m.rolle === "ki" ? "ASSISTENT" : "NUTZER"}: ${String(m.text).slice(0, 1500)}`)
+        .join("\n");
+
+      const prompt =
+        "Du bist das Zweite Gehirn des Nutzers — ein Assistent über seinen Obsidian-Vault.\n" +
+        "Antworte auf Deutsch, kurz und konkret, und stütze dich AUSSCHLIESSLICH auf die Auszüge unten.\n" +
+        "Steht die Antwort dort nicht, sage ehrlich: Dazu finde ich nichts im Vault — und rate nicht.\n" +
+        "Beende die Antwort mit einer Zeile: QUELLEN: <verwendete Dateipfade, mit ; getrennt> (oder QUELLEN: keine).\n\n" +
+        (gespraech ? `BISHERIGES GESPRÄCH:\n${gespraech}\n\n` : "") +
+        `FRAGE: ${frage.trim()}\n\nAUSZÜGE AUS DEM VAULT:\n\n${teile.join("\n\n")}`;
+
+      const cfg = leseConfig().llm || {};
+      const roh = await automat.frageLLM(modell ? Object.assign({}, cfg, { modell }) : cfg, prompt);
+
+      let antwort = roh;
+      let quellen = [];
+      const m = roh.match(/QUELLEN:\s*(.*)$/im);
+      if (m) {
+        antwort = roh.slice(0, m.index).trim();
+        quellen = m[1].split(/[;,]/).map((q) => q.trim()).filter((q) => q && q.toLowerCase() !== "keine");
+        // Nur echte Vault-Pfade als klickbare Quellen durchreichen
+        quellen = quellen.filter((q) => quellenDateien.includes(q) || fs.existsSync(path.join(VAULT_ROOT, q)));
+      }
+      antworte(res, 200, { antwort, quellen, durchsucht: quellenDateien });
     } catch (err) { antworte(res, 500, { fehler: err.message }); }
     return;
   }
