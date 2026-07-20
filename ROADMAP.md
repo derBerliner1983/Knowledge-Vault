@@ -22,12 +22,7 @@ Wahrheit, die KI schlägt vor, der Mensch entscheidet.
 | Notiz-Vorschau | Notiz gerendert im Panel (Tabellen, Code, Listen), klickbare Wikilinks — Lesen ohne App-Wechsel |
 | Undo | Jeder ausgeführte Aktionsplan im Verlauf, per „↩ Rückgängig" umkehrbar; entfernte Notizen landen im Papierkorb statt gelöscht zu werden |
 | Aufräum-Bericht | Ohne LLM, per Knopf: kaputte Wikilinks, verwaiste Notizen, Duplikat-Verdacht, Notizen ohne Tags, Inbox-Altbestand — Klick springt zur Notiz |
-
-## 🔨 Als Nächstes (in dieser Reihenfolge)
-
-1. **Wiki-Ingest-Regel** — Quellen-Ordner `05 Quellen`; neue Quelle →
-   LLM entwirft eine Wiki-Seite nach `09 Wiki/_SCHEMA.md` samt
-   Log-Eintrag (als Vorschlag; Regelvorlage liegt bei, standardmäßig aus).
+| Wiki-Ingest | `05 Quellen` + Regelvorlage: neue Quelle → Wiki-Seiten-Entwurf nach `_SCHEMA.md` samt Log-Eintrag (Regel standardmäßig aus, im ⚙-Tab aktivierbar) |
 
 ## 📋 Backlog (besprochen, noch nicht beauftragt)
 

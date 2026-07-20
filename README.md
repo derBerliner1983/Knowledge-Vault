@@ -177,6 +177,15 @@ Eine Regel besteht aus:
 Neben dem Zeitplan geht alles auch **manuell**: im ⚙-Automat-Tab der
 Web-Ansicht — Regel per Knopf starten oder freien Auftrag eintippen.
 
+**Wiki-Ingest:** Rohquellen (Artikel, Transkripte, Exzerpte) kommen nach
+`05 Quellen`. Die mitgelieferte Regel **„Quelle ins Wiki einarbeiten
+(Entwurf)"** (im ⚙-Tab per Haken aktivieren) lässt das LLM für jede neue
+Quelle eine Wiki-Seite nach `09 Wiki/_SCHEMA.md` entwerfen — mit
+Quellen-Link, Vernetzung und Log-Eintrag; die Seite trägt den Status
+„Entwurf (Automat)" und die Quelle selbst wird nie verändert. Für
+anspruchsvolle Quellen (Widerspruchs-Abgleich über den Bestand) bleibt
+der Ingest-Prompt für Claude Code die bessere Wahl.
+
 Grundsatz bleibt: **Die KI schlägt vor, du entscheidest.** Der Standard-Modus
 `vorschlag` verschiebt und ändert nichts — Vorschläge liest du in Obsidian
 unter `00 Inbox/_Automat-Vorschläge.md` und setzt sie selbst um (oder lässt

@@ -10,6 +10,7 @@ Regel: Jeder neue Bereich bekommt sofort eine Indexzeile.
 | Projekte | `02 Projekte/` | Aktive Vorhaben, ein Unterordner pro Projekt mit Projektnotiz. |
 | Wissen | `03 Wissen/` | Dauerhafte Themen-Notizen — das inhaltliche Herz des Vaults. |
 | Personen | `04 Personen/` | Steckbriefe zu Personen und Organisationen. |
+| Quellen | `05 Quellen/` | Rohquellen für das Wiki — unantastbar, werden nur gelesen. |
 | Vorlagen | `08 Vorlagen/` | Templates für Notizen und Prompt-Vorlagen für Claude Code. |
 | Wiki | `09 Wiki/` | Verdichtetes, KI-gepflegtes Wissen nach `_SCHEMA.md` — Widersprüche werden markiert. |
 | Archiv | `99 Archiv/` | Erledigtes und Veraltetes — bleibt durchsuchbar, stört aber nicht. |
@@ -19,7 +20,7 @@ Regel: Jeder neue Bereich bekommt sofort eine Indexzeile.
 
 ## Bestand (automatisch gepflegt)
 
-Stand: 2026-07-20 · 17 Notizen · 15 Verknüpfungen
+Stand: 2026-07-20 · 18 Notizen · 17 Verknüpfungen
 
 | Bereich | Notizen |
 |---|---|
@@ -28,6 +29,7 @@ Stand: 2026-07-20 · 17 Notizen · 15 Verknüpfungen
 | 02 Projekte | 1 |
 | 03 Wissen | 1 |
 | 04 Personen | 1 |
+| 05 Quellen | 1 |
 | 08 Vorlagen | 4 |
 | 09 Wiki | 2 |
 | 99 Archiv | 1 |
