@@ -1,0 +1,33 @@
+{
+  "_hilfe": "Konnektoren = externe Dienste, auf die deine Notizen verweisen. Jeder normale Link in einer Notiz, dessen Adresse zu 'muster' passt, wird automatisch diesem Konnektor zugeordnet — sichtbar im Graph (farbige Punkte an der Notiz), im Notiz-Panel und auf der automatisch gepflegten Übersichtsseite unter '07 Konnektoren/'. Pflegen am besten über die GUI (⚙-Tab → Konnektoren). 'bild' ist optional (über die GUI hochladbar), sonst gilt die Farbe.",
+  "connectoren": [
+    {
+      "id": "claude",
+      "name": "Claude",
+      "farbe": "#d97757",
+      "bild": "",
+      "muster": ["claude.ai", "claude.com"]
+    },
+    {
+      "id": "github",
+      "name": "GitHub",
+      "farbe": "#a0b3c6",
+      "bild": "",
+      "muster": ["github.com", "gist.github.com"]
+    },
+    {
+      "id": "youtube",
+      "name": "YouTube",
+      "farbe": "#ff4444",
+      "bild": "",
+      "muster": ["youtube.com", "youtu.be"]
+    },
+    {
+      "id": "wikipedia",
+      "name": "Wikipedia",
+      "farbe": "#e8e8e8",
+      "bild": "",
+      "muster": ["wikipedia.org"]
+    }
+  ]
+}

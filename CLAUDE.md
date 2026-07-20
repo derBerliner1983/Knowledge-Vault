@@ -44,6 +44,7 @@ jede Änderung endet mit einem Eintrag in `09 Wiki/log.md`.
 | `03 Wissen` | Themen-Notizen, dauerhaftes Wissen |
 | `04 Personen` | Steckbriefe zu Personen und Organisationen |
 | `05 Quellen` | Rohquellen für das Wiki — unantastbar, nur lesen |
+| `07 Konnektoren` | Automatisch erzeugte Verweis-Übersichten — nie von Hand bearbeiten |
 | `08 Vorlagen` | Templates und Prompt-Vorlagen |
 | `09 Wiki` | Verdichtetes Wissen — nur die KI schreibt hier |
 | `99 Archiv` | Erledigtes und Veraltetes |

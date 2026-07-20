@@ -212,6 +212,24 @@ OS-eigenen Scheduler nutzen — Eintrag z. B.:
 `*/15 * * * * cd /Pfad/zu/Knowledge-Vault && node _system/automat.js --einmal`
 (Windows: Aufgabenplanung mit demselben Befehl).
 
+## Konnektoren — Claude, GitHub und andere Dienste verweisen
+
+Nicht alles muss in Obsidian liegen: Ein normaler Link in einer Notiz
+reicht. Konnektoren machen daraus ein System — definiert im ⚙-Tab
+(**Konnektoren**: Name, Domain-Muster wie `claude.ai`, Farbe, optional
+ein Bild-Upload). Ab dann gilt für jeden passenden Link automatisch:
+
+- **Graph:** farbige Konnektor-Punkte an der Notiz; die Übersichtsseite
+  jedes Dienstes hängt als eigener Knoten im Netz.
+- **Panel:** Abschnitt „Verweise" mit Bild/Farbe — Klick öffnet den Dienst.
+- **„Zeige mir alles von Claude":** einfach „claude" ins Suchfeld — alle
+  Notizen mit Claude-Verweisen leuchten auf. Und in Obsidian liegt unter
+  `07 Konnektoren/Claude.md` eine **automatisch gepflegte Markdown-Seite**
+  mit allen Verweisen, gruppiert nach Herkunfts-Notiz.
+
+Beispiel: `03 Wissen/Konnektoren-Demo.md`. Claude, GitHub, YouTube und
+Wikipedia sind vordefiniert — beliebig erweiterbar, unbegrenzt.
+
 ## Mit dem Gehirn reden (💬 Chat)
 
 Der Knopf **💬 Chat** (oben rechts) öffnet ein Gespräch mit deinem Vault

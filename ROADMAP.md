@@ -32,11 +32,12 @@ Wahrheit, die KI schlägt vor, der Mensch entscheidet.
 | Von unterwegs | VPN-Anleitung im README (Tailscale / Fritz!Box-WireGuard) — sicher, ohne Portfreigabe und ohne eigenes Login-System |
 | Anmeldung & MFA | Passwort + TOTP-Authenticator, Geräte-Sessions (180 Tage), neues Gerät = neue MFA, Geräte-Verwaltung im ⚙-Tab, Anmelde-Bremse |
 
+| Konnektoren | GUI-definierte Dienste (Name, Domain-Muster, Farbe, Bild), automatische Link-Erkennung, Punkte im Graph, Verweise im Panel, Übersichts-MD je Dienst unter `07 Konnektoren/`, Suche „claude" findet alle Verweise |
+
 ## 🔨 In Arbeit (beauftragt)
 
-1. Konnektoren Stufe A: GUI-definierte Dienste (Bild, Farbe, Domain-Muster), Link-Erkennung im Indexer, Graph-Satelliten, Übersichts-MD je Konnektor
-2. Geteilte Claude-Chats importieren (nur von dir geteilte Links → Ablage in `05 Quellen`)
-3. Konnektoren Stufe B: GitHub-Anreicherung (Titel/Status), Auto-Titel/Favicon für neue Links |
+1. Geteilte Claude-Chats importieren (nur von dir geteilte Links → Ablage in `05 Quellen`)
+2. Konnektoren Stufe B: GitHub-Anreicherung (Titel/Status), Auto-Titel/Favicon für neue Links
 
 ## 📋 Backlog
 

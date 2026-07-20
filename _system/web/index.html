@@ -130,6 +130,20 @@
       </section>
 
       <section>
+        <h3>Konnektoren (externe Dienste — Claude, GitHub, …)</h3>
+        <p class="dim" style="font-size:12px">Jeder Link in deinen Notizen, dessen Adresse zu einem
+        Muster passt, wird dem Konnektor zugeordnet: farbige Punkte im Graph, Verweise im Panel,
+        Übersichtsseite unter <code>07 Konnektoren/</code>. Suche nach dem Namen (z. B. „claude")
+        zeigt alle Notizen mit solchen Verweisen.</p>
+        <div id="connectoren"></div>
+        <div class="reihe">
+          <button id="connector-neu">+ Neuer Konnektor</button>
+          <button id="connectoren-speichern" class="primaer">Konnektoren speichern</button>
+          <span id="connectoren-meldung" class="dim"></span>
+        </div>
+      </section>
+
+      <section>
         <h3>Regeln (Crontab — unbegrenzt, direkt hier bearbeiten)</h3>
         <div id="regeln"></div>
         <div class="reihe">
@@ -174,6 +188,7 @@
       <p id="panel-path"></p>
       <div id="panel-tags"></div>
       <div id="panel-neighbors"></div>
+      <div id="panel-verweise"></div>
       <a id="panel-open" class="button" href="#">In Obsidian öffnen</a>
       <div id="panel-inhalt" class="hidden"></div>
     </aside>

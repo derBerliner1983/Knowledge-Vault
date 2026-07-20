@@ -218,6 +218,9 @@ const MIME = {
   ".json": "application/json; charset=utf-8",
   ".svg": "image/svg+xml",
   ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".webp": "image/webp",
+  ".gif": "image/gif",
   ".woff2": "font/woff2",
 };
 
@@ -606,6 +609,59 @@ const server = http.createServer(async (req, res) => {
     const r = automat.updateEinspielen();
     if (r.ok) reindex();
     antworte(res, r.ok ? 200 : 500, r);
+    return;
+  }
+
+  // Konnektoren: Definitionen lesen/speichern, Bild hochladen
+  const CONN_PATH = path.join(__dirname, "connectoren.json");
+  if (url.pathname === "/api/connectoren" && req.method === "GET") {
+    try {
+      const c = JSON.parse(fs.readFileSync(CONN_PATH, "utf8"));
+      antworte(res, 200, { connectoren: c.connectoren || [] });
+    } catch (err) { antworte(res, 500, { fehler: err.message }); }
+    return;
+  }
+  if (url.pathname === "/api/connectoren" && req.method === "POST") {
+    try {
+      const { connectoren } = await leseBody(req);
+      if (!Array.isArray(connectoren)) { antworte(res, 400, { fehler: "connectoren fehlt." }); return; }
+      const fehler = [];
+      const ids = new Set();
+      for (const c of connectoren) {
+        if (!c.name || !String(c.name).trim()) fehler.push("Ein Konnektor hat keinen Namen.");
+        c.id = String(c.id || c.name).toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+        if (!c.id) fehler.push(`Konnektor „${c.name}": ungültiger Name.`);
+        if (ids.has(c.id)) fehler.push(`Konnektor „${c.name}": doppelt.`);
+        ids.add(c.id);
+        c.muster = (Array.isArray(c.muster) ? c.muster : String(c.muster || "").split(","))
+          .map((m) => String(m).trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, ""))
+          .filter(Boolean);
+        if (!c.muster.length) fehler.push(`Konnektor „${c.name}": mindestens ein Domain-Muster nötig.`);
+        c.farbe = /^#[0-9a-f]{6}$/i.test(c.farbe || "") ? c.farbe : "#8899aa";
+        c.bild = String(c.bild || "");
+      }
+      if (fehler.length) { antworte(res, 400, { fehler: fehler.join(" · ") }); return; }
+      const alt = JSON.parse(fs.readFileSync(CONN_PATH, "utf8"));
+      fs.writeFileSync(CONN_PATH, JSON.stringify({ _hilfe: alt._hilfe, connectoren }, null, 2));
+      reindex();
+      antworte(res, 200, { ok: true });
+    } catch (err) { antworte(res, 500, { fehler: err.message }); }
+    return;
+  }
+  if (url.pathname === "/api/connector-bild" && req.method === "POST") {
+    try {
+      const { id, dataUrl } = await leseBody(req);
+      const sauberId = String(id || "").toLowerCase().replace(/[^a-z0-9-]/g, "");
+      const m = String(dataUrl || "").match(/^data:image\/(png|jpeg|webp|gif);base64,(.+)$/);
+      if (!sauberId || !m) { antworte(res, 400, { fehler: "Bild muss PNG, JPEG, WebP oder GIF sein." }); return; }
+      const daten = Buffer.from(m[2], "base64");
+      if (daten.length > 400 * 1024) { antworte(res, 400, { fehler: "Bild größer als 400 KB — bitte kleiner wählen." }); return; }
+      const ordner = path.join(WEB_ROOT, "connector-bilder");
+      fs.mkdirSync(ordner, { recursive: true });
+      const dateiname = `${sauberId}.${m[1] === "jpeg" ? "jpg" : m[1]}`;
+      fs.writeFileSync(path.join(ordner, dateiname), daten);
+      antworte(res, 200, { ok: true, bild: `connector-bilder/${dateiname}` });
+    } catch (err) { antworte(res, 500, { fehler: err.message }); }
     return;
   }
 

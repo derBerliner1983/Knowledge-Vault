@@ -26,6 +26,7 @@ const dpr = window.devicePixelRatio || 1;
 
 let graph = null;
 let nodes = [], edges = [], clusterColor = new Map(), clusterAnchor = new Map();
+let connInfo = new Map(); // Konnektor-id → {name, farbe, bild}
 let cloudParticles = [];
 let simulation = null;
 let transform = d3.zoomIdentity;
@@ -56,7 +57,12 @@ function visible(n) {
   if (!searchTerm) return true;
   const q = searchTerm.toLowerCase();
   return n.title.toLowerCase().includes(q) || n.id.toLowerCase().includes(q) ||
-    (n.tags || []).some((t) => t.toLowerCase().includes(q));
+    (n.tags || []).some((t) => t.toLowerCase().includes(q)) ||
+    // Konnektor-Suche: „claude" zeigt alle Notizen mit Claude-Verweisen
+    (n.extern || []).some((e) => {
+      const c = connInfo.get(e.connector);
+      return e.connector.includes(q) || (c && c.name.toLowerCase().includes(q));
+    });
 }
 
 function neighborsOf(id) {
@@ -91,6 +97,7 @@ async function load() {
   for (const c of graph.clusters) {
     clusterColor.set(c.id, c.id === ROOT_CLUSTER ? HUB_COLOR : PALETTE[pi++ % PALETTE.length]);
   }
+  connInfo = new Map((graph.connectoren || []).map((c) => [c.id, c]));
 
   const R = Math.min(innerWidth, innerHeight) * 0.36;
   const ring = graph.clusters.filter((c) => c.id !== ROOT_CLUSTER);
@@ -341,6 +348,20 @@ function drawNode(n, x, y, r, color, { dimmed = false, core = true, blur = 18 } 
     ctx.beginPath();
     ctx.arc(x, y, r + 4 / transform.k, 0, 2 * Math.PI);
     ctx.stroke();
+  }
+  // Konnektor-Punkte: kleine farbige Satelliten oben rechts an der Notiz
+  if (!dimmed && n.extern && n.extern.length) {
+    const conns = [...new Set(n.extern.map((e) => e.connector))].slice(0, 3);
+    conns.forEach((cid, i) => {
+      const c = connInfo.get(cid);
+      ctx.fillStyle = (c && c.farbe) || "#ffffff";
+      ctx.shadowColor = ctx.fillStyle;
+      ctx.shadowBlur = 6;
+      ctx.beginPath();
+      ctx.arc(x + r * 0.75 + 3 + i * 5.5, y - r * 0.75 - 3, 2.1, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    });
   }
   ctx.globalAlpha = 1;
 }
@@ -872,6 +893,37 @@ function updatePanel() {
         updatePanel(); draw();
       };
       nb.append(a);
+    }
+  }
+
+  // Konnektor-Verweise (externe Dienste) dieser Notiz
+  const vw = document.getElementById("panel-verweise");
+  vw.innerHTML = "";
+  if (selected.extern && selected.extern.length) {
+    const h = document.createElement("h3");
+    h.textContent = "Verweise";
+    vw.append(h);
+    for (const e of selected.extern) {
+      const c = connInfo.get(e.connector) || {};
+      const a = document.createElement("a");
+      a.className = "verweis";
+      a.href = e.url;
+      a.target = "_blank";
+      a.rel = "noopener";
+      if (c.bild) {
+        const img = document.createElement("img");
+        img.src = c.bild;
+        img.alt = c.name || e.connector;
+        a.append(img);
+      } else {
+        const punkt = document.createElement("span");
+        punkt.className = "verweis-punkt";
+        punkt.style.background = c.farbe || "#fff";
+        punkt.style.boxShadow = `0 0 6px ${c.farbe || "#fff"}`;
+        a.append(punkt);
+      }
+      a.append(`${c.name || e.connector}: ${e.text || e.url.replace(/^https?:\/\//, "").slice(0, 60)}`);
+      vw.append(a);
     }
   }
 

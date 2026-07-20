@@ -46,7 +46,105 @@
     ladeLog();
     pruefeUpdate();
     ladeMFA();
+    ladeConnectoren();
   }
+
+  // --- Konnektoren ---------------------------------------------------------------
+
+  let connectoren = [];
+
+  async function ladeConnectoren() {
+    try {
+      const d = await (await fetch("/api/connectoren")).json();
+      connectoren = d.connectoren || [];
+      zeichneConnectoren();
+    } catch {}
+  }
+
+  function zeichneConnectoren() {
+    const wurzel = document.getElementById("connectoren");
+    wurzel.innerHTML = "";
+    connectoren.forEach((c, i) => {
+      const karte = document.createElement("div");
+      karte.className = "regel-karte";
+
+      const kopf = document.createElement("div");
+      kopf.className = "regel-kopf";
+      const bild = document.createElement("span");
+      bild.className = "conn-bild";
+      if (c.bild) bild.innerHTML = `<img src="${c.bild}" alt="">`;
+      else { bild.style.background = c.farbe || "#8899aa"; bild.style.boxShadow = `0 0 8px ${c.farbe}`; }
+      const name = document.createElement("input");
+      name.type = "text"; name.className = "regel-name";
+      name.value = c.name || ""; name.placeholder = "Name (z. B. Claude)";
+      name.oninput = () => { c.name = name.value; };
+      const weg = document.createElement("button");
+      weg.textContent = "🗑";
+      weg.onclick = () => { connectoren.splice(i, 1); zeichneConnectoren(); };
+      kopf.append(bild, name, weg);
+      karte.append(kopf);
+
+      const muster = document.createElement("input");
+      muster.type = "text";
+      muster.value = (c.muster || []).join(", ");
+      muster.placeholder = "Domains, kommagetrennt — z. B. claude.ai, claude.com";
+      muster.oninput = () => { c.muster = muster.value; };
+
+      const farbe = document.createElement("input");
+      farbe.type = "color";
+      farbe.value = /^#[0-9a-f]{6}$/i.test(c.farbe || "") ? c.farbe : "#8899aa";
+      farbe.oninput = () => { c.farbe = farbe.value; bild.style.background = c.farbe; };
+
+      const datei = document.createElement("input");
+      datei.type = "file";
+      datei.accept = "image/png,image/jpeg,image/webp,image/gif";
+      datei.onchange = () => {
+        const f = datei.files && datei.files[0];
+        if (!f) return;
+        const leser = new FileReader();
+        leser.onload = async () => {
+          const res = await (await fetch("/api/connector-bild", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: c.id || c.name, dataUrl: leser.result }),
+          })).json();
+          if (res.bild) { c.bild = res.bild; zeichneConnectoren(); }
+          else alert("✗ " + (res.fehler || "Upload fehlgeschlagen"));
+        };
+        leser.readAsDataURL(f);
+      };
+
+      const zeile = document.createElement("div");
+      zeile.className = "form-grid";
+      zeile.append(feld("Domain-Muster", muster), feld("Farbe", farbe), feld("Bild (optional)", datei));
+      karte.append(zeile);
+      wurzel.append(karte);
+    });
+    if (!connectoren.length) wurzel.innerHTML = `<p class="dim">Noch keine Konnektoren — „+ Neuer Konnektor".</p>`;
+  }
+
+  document.getElementById("connector-neu").onclick = () => {
+    connectoren.push({ id: "", name: "", farbe: "#8899aa", bild: "", muster: [] });
+    zeichneConnectoren();
+  };
+
+  document.getElementById("connectoren-speichern").onclick = async () => {
+    const meldung = document.getElementById("connectoren-meldung");
+    meldung.textContent = "speichere …"; meldung.className = "dim";
+    try {
+      const res = await fetch("/api/connectoren", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ connectoren }),
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.fehler || "Speichern fehlgeschlagen");
+      meldung.textContent = "✓ gespeichert — Vault wird neu indexiert";
+      meldung.className = "gut";
+      ladeConnectoren();
+    } catch (err) {
+      meldung.textContent = "✗ " + err.message;
+      meldung.className = "schlecht";
+    }
+  };
 
   // --- Anmeldung & MFA ----------------------------------------------------------
 
